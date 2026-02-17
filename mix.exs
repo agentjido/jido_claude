@@ -9,7 +9,7 @@ defmodule JidoClaude.MixProject do
     [
       app: :jido_claude,
       version: @version,
-      elixir: "~> 1.17",
+      elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -26,7 +26,7 @@ defmodule JidoClaude.MixProject do
       # Test Coverage
       test_coverage: [
         tool: ExCoveralls,
-        summary: [threshold: 80]
+        summary: [threshold: 90]
       ],
 
       # Dialyzer
@@ -59,22 +59,14 @@ defmodule JidoClaude.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  defp deps do
-    jido_deps() ++ runtime_deps() ++ dev_test_deps()
-  end
-
-  defp jido_deps do
-    [
-      jido_dep(:jido, "../jido", "~> 1.2")
-    ]
-  end
+  defp deps, do: runtime_deps() ++ dev_test_deps()
 
   defp runtime_deps do
     [
+      {:jido, "~> 2.0.0-rc.5"},
       {:claude_agent_sdk, "~> 0.7"},
       {:jason, "~> 1.4"},
-      {:nimble_options, "~> 1.1"},
-      {:splode, "~> 0.2.4"},
+      {:splode, "~> 0.3"},
       {:uniq, "~> 0.6"}
     ]
   end
@@ -84,26 +76,13 @@ defmodule JidoClaude.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:doctor, "~> 0.21", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: [:dev, :test]},
       {:git_hooks, "~> 0.8", only: [:dev, :test], runtime: false},
       {:git_ops, "~> 2.9", only: :dev, runtime: false},
       {:mimic, "~> 2.0", only: :test},
       {:stream_data, "~> 1.0", only: [:dev, :test]}
     ]
-  end
-
-  defp jido_dep(app, rel_path, hex_req, extra_opts \\ []) do
-    path = Path.expand(rel_path, __DIR__)
-
-    if File.dir?(path) and File.exists?(Path.join(path, "mix.exs")) do
-      {app, Keyword.merge([path: rel_path, override: true], extra_opts)}
-    else
-      {app, hex_req, extra_opts}
-    end
-    |> case do
-      {app, opts} when is_list(opts) -> {app, opts}
-      {app, req, opts} -> {app, req, opts}
-    end
   end
 
   defp aliases do
@@ -115,7 +94,8 @@ defmodule JidoClaude.MixProject do
         "format --check-formatted",
         "compile --warnings-as-errors",
         "credo --min-priority higher",
-        "dialyzer"
+        "dialyzer",
+        "doctor --raise"
       ],
       docs: "docs -f html"
     ]
@@ -123,7 +103,7 @@ defmodule JidoClaude.MixProject do
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README.md", "LICENSE", "CHANGELOG.md", "usage-rules.md"],
+      files: ["config", "lib", "mix.exs", "README.md", "LICENSE", "CHANGELOG.md", "usage-rules.md"],
       maintainers: ["Mike Hostetler"],
       licenses: ["Apache-2.0"],
       links: %{

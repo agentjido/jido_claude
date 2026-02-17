@@ -60,22 +60,23 @@ defmodule JidoClaude.StreamRunner do
   end
 
   defp build_message_signal(%Message{type: type, subtype: subtype, data: data, raw: raw}) do
-    Signal.new!(
-      "claude.internal.message",
-      %{
+    Signal.new!(%{
+      type: "claude.internal.message",
+      source: "/claude/stream_runner",
+      data: %{
         type: type,
         subtype: subtype,
         data: data,
         raw: raw
-      },
-      source: "/claude/stream_runner"
-    )
+      }
+    })
   end
 
   defp build_error_signal(exception, stacktrace) do
-    Signal.new!(
-      "claude.internal.message",
-      %{
+    Signal.new!(%{
+      type: "claude.internal.message",
+      source: "/claude/stream_runner",
+      data: %{
         type: :result,
         subtype: :error_exception,
         data: %{
@@ -83,8 +84,7 @@ defmodule JidoClaude.StreamRunner do
           stacktrace: Exception.format_stacktrace(stacktrace)
         },
         raw: nil
-      },
-      source: "/claude/stream_runner"
-    )
+      }
+    })
   end
 end

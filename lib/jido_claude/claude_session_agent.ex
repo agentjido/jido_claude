@@ -59,7 +59,6 @@ defmodule JidoClaude.ClaudeSessionAgent do
       error: [type: :any, default: nil]
     ]
 
-  @impl Jido.Agent
   def signal_routes do
     [
       {"claude.internal.message", {JidoClaude.Actions.HandleMessage, %{}}}

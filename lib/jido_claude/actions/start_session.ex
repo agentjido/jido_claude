@@ -43,6 +43,8 @@ defmodule JidoClaude.Actions.StartSession do
       sdk_timeout_ms: [type: :integer, default: 600_000]
     ]
 
+  @compile {:no_warn_undefined, {Jido.Agent.Directive, :spawn, 2}}
+
   alias Jido.Agent.Directive
   alias JidoClaude.StreamRunner
 

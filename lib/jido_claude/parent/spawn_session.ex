@@ -46,6 +46,8 @@ defmodule JidoClaude.Parent.SpawnSession do
       meta: [type: :map, default: %{}]
     ]
 
+  @compile {:no_warn_undefined, {Jido.Agent.Directive, :spawn_agent, 3}}
+
   alias Jido.Agent.Directive
   alias JidoClaude.ClaudeSessionAgent
   alias JidoClaude.Parent.SessionRegistry

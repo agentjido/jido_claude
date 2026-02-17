@@ -28,6 +28,8 @@ defmodule JidoClaude.Parent.CancelSession do
       reason: [type: :atom, default: :cancelled]
     ]
 
+  @compile {:no_warn_undefined, {Jido.Agent.Directive, :stop_child, 2}}
+
   alias Jido.Agent.Directive
   alias JidoClaude.Parent.SessionRegistry
 

@@ -23,6 +23,9 @@ defmodule JidoClaude.Actions.CancelSession do
       reason: [type: :atom, default: :cancelled]
     ]
 
+  @compile {:no_warn_undefined, {Jido.Agent.Directive, :emit_to_parent, 2}}
+  @compile {:no_warn_undefined, {Jido.Agent.Directive, :stop, 1}}
+
   alias Jido.Agent.Directive
   alias JidoClaude.Signals
 
