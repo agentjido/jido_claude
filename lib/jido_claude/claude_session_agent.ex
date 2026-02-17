@@ -59,6 +59,19 @@ defmodule JidoClaude.ClaudeSessionAgent do
       error: [type: :any, default: nil]
     ]
 
+  @spec plugin_specs() :: [Jido.Plugin.Spec.t()]
+  def plugin_specs do
+    super()
+    |> Enum.map(fn %Jido.Plugin.Spec{} = spec ->
+      %Jido.Plugin.Spec{
+        spec
+        | description: spec.description || "",
+          category: spec.category || "",
+          vsn: spec.vsn || ""
+      }
+    end)
+  end
+
   def signal_routes do
     [
       {"claude.internal.message", {JidoClaude.Actions.HandleMessage, %{}}}
