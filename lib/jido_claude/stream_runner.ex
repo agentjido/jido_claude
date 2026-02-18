@@ -9,6 +9,7 @@ defmodule JidoClaude.StreamRunner do
   """
 
   alias ClaudeAgentSDK.{Options, Message}
+  alias JidoClaude.RuntimeConfig
   alias Jido.Signal
 
   require Logger
@@ -41,16 +42,23 @@ defmodule JidoClaude.StreamRunner do
       Jido.Signal.Dispatch.dispatch(error_signal, {:pid, target: agent_pid})
   end
 
-  defp build_sdk_options(options) when is_struct(options, Options), do: options
+  defp build_sdk_options(%Options{} = options) do
+    %Options{
+      options
+      | model: options.model || RuntimeConfig.default_model(),
+        env: RuntimeConfig.merge_runtime_env(options.env)
+    }
+  end
 
   defp build_sdk_options(options) when is_map(options) do
     %Options{
-      model: options[:model] || "sonnet",
+      model: options[:model] || RuntimeConfig.default_model(),
       max_turns: options[:max_turns] || 25,
       allowed_tools: options[:allowed_tools] || ["Read", "Glob", "Grep", "Bash"],
       cwd: options[:cwd] || File.cwd!(),
       system_prompt: options[:system_prompt],
-      timeout_ms: options[:timeout_ms] || 600_000
+      timeout_ms: options[:timeout_ms] || 600_000,
+      env: RuntimeConfig.merge_runtime_env(options[:env] || %{})
     }
   end
 

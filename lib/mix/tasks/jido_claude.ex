@@ -10,9 +10,10 @@ defmodule Mix.Tasks.JidoClaude do
 
   ## Options
 
-    * `--model` - Claude model to use ("haiku", "sonnet", "opus"). Default: "sonnet"
+    * `--model` - Claude model/alias to use. Default: `JIDO_CLAUDE_DEFAULT_MODEL` or "sonnet"
     * `--max-turns` - Maximum agentic loop iterations. Default: 25
     * `--cwd` - Working directory for tools. Default: current directory
+    * `--base-url` - Override `ANTHROPIC_BASE_URL` for this run
     * `--tools` - Comma-separated list of allowed tools. Default: "Read,Glob,Grep,Bash"
     * `--debug` - Show debug output for message processing
 
@@ -32,6 +33,7 @@ defmodule Mix.Tasks.JidoClaude do
   use Mix.Task
 
   alias ClaudeAgentSDK.{Options, Message}
+  alias JidoClaude.RuntimeConfig
 
   require Logger
 
@@ -47,6 +49,7 @@ defmodule Mix.Tasks.JidoClaude do
           model: :string,
           max_turns: :integer,
           cwd: :string,
+          base_url: :string,
           tools: :string,
           debug: :boolean
         ]
@@ -76,6 +79,9 @@ defmodule Mix.Tasks.JidoClaude do
   defp parse_prompt(positional), do: Enum.join(positional, " ")
 
   defp build_options(opts) do
+    runtime_env = RuntimeConfig.runtime_env_overrides()
+    env = maybe_put_base_url(runtime_env, Keyword.get(opts, :base_url))
+
     allowed_tools =
       case Keyword.get(opts, :tools) do
         nil -> ["Read", "Glob", "Grep", "Bash"]
@@ -83,12 +89,20 @@ defmodule Mix.Tasks.JidoClaude do
       end
 
     %Options{
-      model: Keyword.get(opts, :model, "sonnet"),
+      model: Keyword.get(opts, :model, RuntimeConfig.default_model()),
       max_turns: Keyword.get(opts, :max_turns, 25),
       allowed_tools: allowed_tools,
       cwd: Keyword.get(opts, :cwd, File.cwd!()),
-      timeout_ms: 600_000
+      timeout_ms: 600_000,
+      env: env
     }
+  end
+
+  defp maybe_put_base_url(env, nil), do: env
+
+  defp maybe_put_base_url(env, base_url) when is_binary(base_url) do
+    trimmed = String.trim(base_url)
+    if trimmed == "", do: env, else: Map.put(env, "ANTHROPIC_BASE_URL", trimmed)
   end
 
   defp run_session(prompt, options, debug?) do

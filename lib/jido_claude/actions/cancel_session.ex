@@ -36,9 +36,16 @@ defmodule JidoClaude.Actions.CancelSession do
     session_id = if agent, do: agent.state.session_id, else: nil
 
     if status == :running do
+      cancel_error = cancel_runner(agent)
+
       state = %{
         status: :cancelled,
-        error: %{type: :cancelled, reason: params.reason}
+        error:
+          %{
+            type: :cancelled,
+            reason: params.reason
+          }
+          |> maybe_put_cancel_error(cancel_error)
       }
 
       signal = Signals.session_error(session_id, :cancelled, %{reason: params.reason})
@@ -53,4 +60,23 @@ defmodule JidoClaude.Actions.CancelSession do
       {:error, :session_not_running}
     end
   end
+
+  defp cancel_runner(nil), do: nil
+
+  defp cancel_runner(agent) do
+    executor_module = agent.state[:executor_module] || JidoClaude.Executor.Local
+    runner_ref = agent.state[:runner_ref]
+
+    case executor_module.cancel(runner_ref) do
+      :ok -> nil
+      {:error, reason} -> reason
+      other -> {:unexpected_cancel_result, other}
+    end
+  rescue
+    error ->
+      {:cancel_exception, Exception.message(error)}
+  end
+
+  defp maybe_put_cancel_error(error_map, nil), do: error_map
+  defp maybe_put_cancel_error(error_map, reason), do: Map.put(error_map, :cancel_error, reason)
 end

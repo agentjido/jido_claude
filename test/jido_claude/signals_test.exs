@@ -12,6 +12,14 @@ defmodule JidoClaude.SignalsTest do
       assert signal.data.model == "sonnet"
       assert signal.source == "/claude"
     end
+
+    test "accepts string-keyed maps" do
+      signal = Signals.session_started(%{"session_id" => "test-456", "model" => "haiku"})
+
+      assert signal.type == "claude.session.started"
+      assert signal.data.session_id == "test-456"
+      assert signal.data.model == "haiku"
+    end
   end
 
   describe "assistant_text/2" do
@@ -35,6 +43,17 @@ defmodule JidoClaude.SignalsTest do
     end
   end
 
+  describe "tool_result/2" do
+    test "builds signal and merges session_id into payload" do
+      signal = Signals.tool_result("test-123", %{tool: "Read", output: "ok"})
+
+      assert signal.type == "claude.turn.tool_result"
+      assert signal.data.session_id == "test-123"
+      assert signal.data.tool == "Read"
+      assert signal.data.output == "ok"
+    end
+  end
+
   describe "session_success/1" do
     test "builds signal with result and cost" do
       signal =
@@ -52,6 +71,24 @@ defmodule JidoClaude.SignalsTest do
       assert signal.data.turns == 5
       assert signal.data.cost_usd == 0.0234
       assert signal.data.duration_ms == 15000
+    end
+
+    test "accepts string-keyed maps" do
+      signal =
+        Signals.session_success(%{
+          "session_id" => "test-789",
+          "result" => "done",
+          "num_turns" => 2,
+          "total_cost_usd" => 0.01,
+          "duration_ms" => 1000
+        })
+
+      assert signal.type == "claude.session.success"
+      assert signal.data.session_id == "test-789"
+      assert signal.data.result == "done"
+      assert signal.data.turns == 2
+      assert signal.data.cost_usd == 0.01
+      assert signal.data.duration_ms == 1000
     end
   end
 

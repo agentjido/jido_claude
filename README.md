@@ -24,6 +24,27 @@ end
 
 2. The SDK uses the CLI's stored authentication - no API keys needed in your Elixir app.
 
+## Claude Runtime Env Support
+
+`jido_claude` now forwards Claude runtime env overrides from:
+
+1. `~/.claude/settings.json` (`env` object), then
+2. process env vars (which override settings values), then
+3. `config :jido_claude, :env_overrides` (highest priority).
+
+This includes ZAI-compatible settings such as:
+
+- `ANTHROPIC_BASE_URL`
+- `ANTHROPIC_AUTH_TOKEN`
+- `ANTHROPIC_DEFAULT_HAIKU_MODEL`
+- `ANTHROPIC_DEFAULT_SONNET_MODEL`
+- `ANTHROPIC_DEFAULT_OPUS_MODEL`
+
+You can also set a package-level default model with:
+
+- `JIDO_CLAUDE_DEFAULT_MODEL` or
+- `config :jido_claude, :default_model, "..."`
+
 ## Architecture
 
 JidoClaude provides a two-agent pattern for running Claude Code sessions:
@@ -141,6 +162,24 @@ agent.state.sessions
 | `claude.session.success` | Session completed successfully |
 | `claude.session.error` | Session failed |
 
+## Live Sprite Integration Test
+
+`jido_claude` includes an opt-in live integration test for sprite-backed execution:
+
+```bash
+mix test --include integration test/jido_claude/integration/sprite_shell_integration_test.exs
+```
+
+The test loads `.env` automatically and looks for:
+
+- `SPRITE_TOKEN` (or `SPRITES_TEST_TOKEN`) - required
+- `SPRITE_BASE_URL` (or `SPRITES_TEST_BASE_URL`) - optional
+- `JIDO_CLAUDE_SPRITE_NAME` - optional fixed sprite name (otherwise a unique name is generated)
+- `JIDO_CLAUDE_REQUIRE_SUCCESS=1` - optional strict mode (fail unless Claude run ends in `:success`)
+
+By default, integration tests are excluded from `mix test`.
+If `jido_shell` or `sprites-ex` is unavailable in the test runtime, the integration test is skipped with a clear reason.
+
 ## Configuration Options
 
 ### StartSession / SpawnSession
@@ -148,13 +187,33 @@ agent.state.sessions
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `prompt` | string | required | The prompt to send to Claude |
-| `model` | string | "sonnet" | Model: "haiku", "sonnet", or "opus" |
+| `model` | string | default model config or "sonnet" | Claude model/alias (for example: `haiku`, `sonnet`, `opus`, or custom backend alias) |
 | `max_turns` | integer | 25 | Maximum agentic loop iterations |
 | `allowed_tools` | list | ["Read", "Glob", "Grep", "Bash"] | Tools Claude can use |
 | `cwd` | string | current dir | Working directory for tools |
 | `system_prompt` | string | nil | Custom system prompt |
 | `sdk_timeout_ms` | integer | 600_000 | SDK-level timeout (10 min) |
+| `target` | atom | `:local` | Execution target: `:local`, `:shell`, or `:sprite` |
+| `shell` | map | `%{}` | Shell executor options (workspace/backend/session options) |
+| `execution_context` | map | `%{}` | Per-run limits/network context forwarded to `jido_shell` |
 | `meta` | map | %{} | Custom metadata (SpawnSession only) |
+
+Shell-backed runs require adding `jido_shell` to your dependencies. For Sprite execution,
+set `target: :sprite` and pass Sprite backend config via `shell`:
+
+```elixir
+Jido.Agent.Server.cmd(pid, {StartSession, %{
+  prompt: "Analyze this codebase",
+  target: :sprite,
+  shell: %{
+    backend: {Jido.Shell.Backend.Sprite, %{
+      sprite_name: "my-sprite",
+      token: System.fetch_env!("SPRITES_TOKEN"),
+      create: true
+    }}
+  }
+}})
+```
 
 ## License
 

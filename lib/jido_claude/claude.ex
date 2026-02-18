@@ -21,16 +21,19 @@ defmodule JidoClaude do
   ┌─────────────────────────────────────────┐
   │  ClaudeSessionAgent                     │
   │  - Owns single Claude session           │
-  │  - Runs SDK in background Task          │
+  │  - Runs via pluggable executor          │
   │  - Emits turn signals to parent         │
   └─────────────────────────────────────────┘
-            │ Task
+            │ Local Executor
             ▼
   ┌─────────────────────────────────────────┐
-  │  StreamRunner                           │
+  │  StreamRunner (local SDK path)          │
   │  - Calls ClaudeAgentSDK.query/3         │
   │  - Dispatches messages as signals       │
   └─────────────────────────────────────────┘
+
+  Optional shell-backed executors can run Claude through `jido_shell` backends
+  (including Sprite) while preserving the same internal signal contract.
   ```
 
   ## Usage

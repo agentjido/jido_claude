@@ -14,6 +14,12 @@ defmodule JidoClaude.ClaudeSessionAgent do
     * `session_id` - Unique identifier for this session
     * `prompt` - The original prompt sent to Claude
     * `options` - SDK options used for the session
+    * `execution_target` - Runtime target (`:local`, `:shell`, `:sprite`)
+    * `executor_module` - Executor module handling process lifecycle
+    * `runner_ref` - Opaque executor-specific cancellation handle
+    * `shell_session_id` - Shell session id when using shell-backed execution
+    * `shell_workspace_id` - Shell workspace id when using shell-backed execution
+    * `shell_backend` - Shell backend module name when using shell-backed execution
     * `model` - Model name (populated after session init)
     * `turns` - Number of turns completed
     * `transcript` - List of messages exchanged
@@ -51,6 +57,12 @@ defmodule JidoClaude.ClaudeSessionAgent do
       prompt: [type: :string, default: nil],
       options: [type: :any, default: nil],
       session_id: [type: :string, default: nil],
+      execution_target: [type: :atom, default: :local],
+      executor_module: [type: :any, default: nil],
+      runner_ref: [type: :any, default: nil],
+      shell_session_id: [type: :string, default: nil],
+      shell_workspace_id: [type: :string, default: nil],
+      shell_backend: [type: :string, default: nil],
       model: [type: :string, default: nil],
       turns: [type: :integer, default: 0],
       transcript: [type: {:list, :any}, default: []],

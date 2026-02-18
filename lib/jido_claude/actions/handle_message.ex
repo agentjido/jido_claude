@@ -63,12 +63,17 @@ defmodule JidoClaude.Actions.HandleMessage do
   end
 
   defp process_message(%{type: :system, subtype: :init, data: data}, _agent, _session_id) do
-    state = %{
-      session_id: data[:session_id],
-      model: data[:model]
+    started_data = %{
+      session_id: map_value(data, :session_id),
+      model: map_value(data, :model)
     }
 
-    signal = Signals.session_started(data)
+    state = %{
+      session_id: started_data.session_id,
+      model: started_data.model
+    }
+
+    signal = Signals.session_started(started_data)
     {state, [signal], false}
   end
 
@@ -106,13 +111,21 @@ defmodule JidoClaude.Actions.HandleMessage do
   end
 
   defp process_message(%{type: :result, subtype: :success, data: data}, _agent, _session_id) do
-    state = %{
-      status: :success,
-      result: data[:result],
-      cost_usd: data[:total_cost_usd]
+    success_data = %{
+      session_id: map_value(data, :session_id),
+      result: map_value(data, :result),
+      num_turns: map_value(data, :num_turns),
+      total_cost_usd: map_value(data, :total_cost_usd),
+      duration_ms: map_value(data, :duration_ms)
     }
 
-    signal = Signals.session_success(data)
+    state = %{
+      status: :success,
+      result: success_data.result,
+      cost_usd: success_data.total_cost_usd
+    }
+
+    signal = Signals.session_success(success_data)
     {state, [signal], true}
   end
 
@@ -163,5 +176,33 @@ defmodule JidoClaude.Actions.HandleMessage do
     end)
   end
 
+  defp extract_content_blocks(%{message: %{content: content}}) when is_list(content) do
+    Enum.map(content, fn
+      %{type: "text", text: text} ->
+        %{type: :text, text: text}
+
+      %{type: :text, text: text} ->
+        %{type: :text, text: text}
+
+      %{type: "tool_use", name: name, input: input} ->
+        %{type: :tool_use, name: name, input: input}
+
+      %{type: :tool_use, name: name, input: input} ->
+        %{type: :tool_use, name: name, input: input}
+
+      other ->
+        %{type: :unknown, raw: other}
+    end)
+  end
+
   defp extract_content_blocks(_), do: []
+
+  defp map_value(data, key) when is_map(data) do
+    case Map.fetch(data, key) do
+      {:ok, value} -> value
+      :error -> Map.get(data, Atom.to_string(key))
+    end
+  end
+
+  defp map_value(_data, _key), do: nil
 end
