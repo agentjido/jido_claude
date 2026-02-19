@@ -7,7 +7,10 @@ defmodule JidoClaude.RuntimeConfigTest do
     "JIDO_CLAUDE_SETTINGS_PATH",
     "JIDO_CLAUDE_DEFAULT_MODEL",
     "ANTHROPIC_BASE_URL",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL",
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_API_KEY",
+    "CLAUDE_CODE_API_KEY"
   ]
 
   setup do
@@ -78,6 +81,33 @@ defmodule JidoClaude.RuntimeConfigTest do
     merged = RuntimeConfig.merge_runtime_env(%{"ANTHROPIC_BASE_URL" => "https://explicit.z.ai"})
 
     assert merged["ANTHROPIC_BASE_URL"] == "https://explicit.z.ai"
+  end
+
+  test "validate_auth_contract!/0 passes when base URL and one auth var are set" do
+    System.put_env("ANTHROPIC_BASE_URL", "https://zai.example/v1")
+    System.put_env("CLAUDE_CODE_API_KEY", "claude-key")
+
+    assert :ok == RuntimeConfig.validate_auth_contract!()
+  end
+
+  test "validate_auth_contract!/0 fails when base URL is missing" do
+    System.delete_env("ANTHROPIC_BASE_URL")
+    System.put_env("ANTHROPIC_AUTH_TOKEN", "auth-token")
+
+    assert_raise RuntimeError, ~r/ANTHROPIC_BASE_URL/, fn ->
+      RuntimeConfig.validate_auth_contract!()
+    end
+  end
+
+  test "validate_auth_contract!/0 fails when auth is missing" do
+    System.put_env("ANTHROPIC_BASE_URL", "https://zai.example/v1")
+    System.delete_env("ANTHROPIC_AUTH_TOKEN")
+    System.delete_env("ANTHROPIC_API_KEY")
+    System.delete_env("CLAUDE_CODE_API_KEY")
+
+    assert_raise RuntimeError, ~r/ANTHROPIC_AUTH_TOKEN/, fn ->
+      RuntimeConfig.validate_auth_contract!()
+    end
   end
 
   defp write_settings!(map) do

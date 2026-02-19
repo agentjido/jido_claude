@@ -8,6 +8,7 @@ defmodule JidoClaude.Executor.Shell do
 
   @behaviour JidoClaude.Executor
 
+  alias JidoClaude.CLI.Parser
   alias Jido.Signal
 
   require Logger
@@ -204,7 +205,7 @@ defmodule JidoClaude.Executor.Shell do
     trimmed = line |> String.trim() |> String.trim_trailing("\r")
 
     if trimmed != "" do
-      case decode_stream_line(trimmed) do
+      case Parser.decode_stream_line(trimmed) do
         {:ok, message} ->
           dispatch_internal_message(agent_pid, message)
 
@@ -213,58 +214,6 @@ defmodule JidoClaude.Executor.Shell do
       end
     end
   end
-
-  defp decode_stream_line(line) when is_binary(line) do
-    with {:ok, raw} <- Jason.decode(line) do
-      {:ok,
-       %{
-         type: normalize_message_type(get_opt(raw, :type, nil)),
-         subtype: normalize_message_subtype(get_opt(raw, :subtype, nil)),
-         data: extract_message_data(raw),
-         raw: raw
-       }}
-    end
-  end
-
-  defp extract_message_data(raw) when is_map(raw) do
-    case get_opt(raw, :data, nil) do
-      data when is_map(data) -> data
-      nil -> raw
-      other -> %{"value" => other}
-    end
-  end
-
-  defp normalize_message_type(:system), do: :system
-  defp normalize_message_type(:assistant), do: :assistant
-  defp normalize_message_type(:user), do: :user
-  defp normalize_message_type(:result), do: :result
-  defp normalize_message_type("system"), do: :system
-  defp normalize_message_type("assistant"), do: :assistant
-  defp normalize_message_type("user"), do: :user
-  defp normalize_message_type("result"), do: :result
-  defp normalize_message_type(_), do: :unknown
-
-  defp normalize_message_subtype(nil), do: nil
-  defp normalize_message_subtype(:init), do: :init
-  defp normalize_message_subtype(:success), do: :success
-  defp normalize_message_subtype(:error_exception), do: :error_exception
-  defp normalize_message_subtype(:error_max_turns), do: :error_max_turns
-  defp normalize_message_subtype(:error_timeout), do: :error_timeout
-  defp normalize_message_subtype("init"), do: :init
-  defp normalize_message_subtype("success"), do: :success
-  defp normalize_message_subtype("error_exception"), do: :error_exception
-  defp normalize_message_subtype("error_max_turns"), do: :error_max_turns
-  defp normalize_message_subtype("error_timeout"), do: :error_timeout
-
-  defp normalize_message_subtype(subtype) when is_binary(subtype) do
-    if String.starts_with?(subtype, "error_") do
-      :error_exception
-    else
-      :unknown
-    end
-  end
-
-  defp normalize_message_subtype(_), do: :unknown
 
   defp dispatch_internal_message(agent_pid, message) do
     signal =

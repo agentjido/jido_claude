@@ -68,6 +68,7 @@ defmodule JidoClaude.MixProject do
       {:jido_shell, github: "agentjido/jido_shell"},
       {:sprites, git: "https://github.com/mikehostetler/sprites-ex.git", override: true},
       {:jason, "~> 1.4"},
+      {:zoi, "~> 0.14"},
       {:splode, "~> 0.3", override: true},
       {:uniq, "~> 0.6"}
     ]

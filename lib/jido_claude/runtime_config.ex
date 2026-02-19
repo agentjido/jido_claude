@@ -6,6 +6,7 @@ defmodule JidoClaude.RuntimeConfig do
   @known_env_keys [
     "ANTHROPIC_API_KEY",
     "ANTHROPIC_AUTH_TOKEN",
+    "CLAUDE_CODE_API_KEY",
     "ANTHROPIC_BASE_URL",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL",
     "ANTHROPIC_DEFAULT_SONNET_MODEL",
@@ -13,6 +14,12 @@ defmodule JidoClaude.RuntimeConfig do
     "API_TIMEOUT_MS",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
     "CLAUDE_AGENT_OAUTH_TOKEN"
+  ]
+
+  @required_auth_keys [
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_API_KEY",
+    "CLAUDE_CODE_API_KEY"
   ]
 
   @spec default_model() :: String.t()
@@ -41,6 +48,24 @@ defmodule JidoClaude.RuntimeConfig do
   def merge_runtime_env(env_overrides) do
     runtime_env_overrides()
     |> Map.merge(normalize_env_map(env_overrides))
+  end
+
+  @doc """
+  Validate strict Claude auth/base-url runtime contract.
+  """
+  @spec validate_auth_contract!() :: :ok | no_return()
+  def validate_auth_contract! do
+    require_env!(
+      "ANTHROPIC_BASE_URL",
+      "ANTHROPIC_BASE_URL environment variable not set"
+    )
+
+    require_any_env!(
+      @required_auth_keys,
+      "One of ANTHROPIC_AUTH_TOKEN, ANTHROPIC_API_KEY, or CLAUDE_CODE_API_KEY must be set"
+    )
+
+    :ok
   end
 
   defp settings_env_overrides do
@@ -110,4 +135,15 @@ defmodule JidoClaude.RuntimeConfig do
   defp normalize_env_map(_), do: %{}
 
   defp valid_string?(value), do: is_binary(value) and String.trim(value) != ""
+
+  defp require_env!(key, message) do
+    if present?(System.get_env(key)), do: :ok, else: raise(message)
+  end
+
+  defp require_any_env!(keys, message) when is_list(keys) do
+    if Enum.any?(keys, &present?(System.get_env(&1))), do: :ok, else: raise(message)
+  end
+
+  defp present?(value) when is_binary(value), do: String.trim(value) != ""
+  defp present?(_), do: false
 end
