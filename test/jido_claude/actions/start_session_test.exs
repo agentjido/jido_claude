@@ -1,7 +1,7 @@
-defmodule JidoClaude.Actions.StartSessionTest do
+defmodule Jido.Claude.Actions.StartSessionTest do
   use ExUnit.Case, async: true
 
-  alias JidoClaude.Actions.StartSession
+  alias Jido.Claude.Actions.StartSession
 
   defmodule FakeExecutor do
     def start(args) do

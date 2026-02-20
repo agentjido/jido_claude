@@ -1,4 +1,4 @@
-defmodule JidoClaude.Executor.Shell do
+defmodule Jido.Claude.Executor.Shell do
   @moduledoc """
   Executor that runs Claude CLI through `jido_shell` session backends.
 
@@ -6,9 +6,9 @@ defmodule JidoClaude.Executor.Shell do
   process lifecycle and backend selection (local/sprite/other) to `jido_shell`.
   """
 
-  @behaviour JidoClaude.Executor
+  @behaviour Jido.Claude.Executor
 
-  alias JidoClaude.CLI.Parser
+  alias Jido.Claude.CLI.Parser
   alias Jido.Signal
 
   require Logger
@@ -294,7 +294,7 @@ defmodule JidoClaude.Executor.Shell do
     session_opts = normalize_keyword(get_opt(shell_opts, :session_opts, []))
     fallback_cwd = get_opt(options, :cwd, nil)
     cwd = get_opt(shell_opts, :cwd, fallback_cwd)
-    runtime_env = JidoClaude.RuntimeConfig.runtime_env_overrides()
+    runtime_env = Jido.Claude.RuntimeConfig.runtime_env_overrides()
     option_env = normalize_env(get_opt(options, :env, %{}))
     shell_env = normalize_env(get_opt(shell_opts, :env, %{}))
     env = runtime_env |> Map.merge(option_env) |> Map.merge(shell_env)

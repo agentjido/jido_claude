@@ -1,4 +1,4 @@
-defmodule JidoClaude.Signals.TurnToolResult do
+defmodule Jido.Claude.Signals.TurnToolResult do
   @moduledoc """
   `claude.turn.tool_result` signal emitted for tool execution output.
 

@@ -1,4 +1,4 @@
-defmodule JidoClaude.StreamRunner do
+defmodule Jido.Claude.StreamRunner do
   @moduledoc """
   Task that runs ClaudeAgentSDK.query/3 and dispatches each message
   as a signal to the owning ClaudeSessionAgent.
@@ -9,7 +9,7 @@ defmodule JidoClaude.StreamRunner do
   """
 
   alias ClaudeAgentSDK.{Options, Message}
-  alias JidoClaude.RuntimeConfig
+  alias Jido.Claude.RuntimeConfig
   alias Jido.Signal
 
   require Logger

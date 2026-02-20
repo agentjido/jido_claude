@@ -47,7 +47,7 @@ You can also set a package-level default model with:
 
 ## Architecture
 
-JidoClaude provides a two-agent pattern for running Claude Code sessions:
+Jido.Claude provides a two-agent pattern for running Claude Code sessions:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -78,8 +78,8 @@ JidoClaude provides a two-agent pattern for running Claude Code sessions:
 ### Single Session
 
 ```elixir
-alias JidoClaude.ClaudeSessionAgent
-alias JidoClaude.Actions.StartSession
+alias Jido.Claude.ClaudeSessionAgent
+alias Jido.Claude.Actions.StartSession
 
 # Start a session agent
 {:ok, pid} = Jido.Agent.Server.start_link(
@@ -105,7 +105,7 @@ defmodule MyOrchestrator do
       sessions: [type: :map, default: %{}]
     ]
 
-  alias JidoClaude.Parent.{SpawnSession, HandleSessionEvent, CancelSession}
+  alias Jido.Claude.Parent.{SpawnSession, HandleSessionEvent, CancelSession}
 
   def signal_routes do
     [

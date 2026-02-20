@@ -16,24 +16,24 @@
 
 This is an Elixir library for **Claude Code integration** with the Jido Agent framework:
 
-- **JidoClaude** - Main entry module
-- **JidoClaude.ClaudeSessionAgent** - Agent managing single Claude Code sessions
-- **JidoClaude.StreamRunner** - Handles SDK streaming and message dispatch
-- **JidoClaude.Signals** - Signal definitions for Claude events
-- **JidoClaude.Error** - Splode-based error handling
+- **Jido.Claude** - Main entry module
+- **Jido.Claude.ClaudeSessionAgent** - Agent managing single Claude Code sessions
+- **Jido.Claude.StreamRunner** - Handles SDK streaming and message dispatch
+- **Jido.Claude.Signals** - Signal definitions for Claude events
+- **Jido.Claude.Error** - Splode-based error handling
 
 ### Actions
 
-- **JidoClaude.Actions.StartSession** - Start a Claude session with prompt
-- **JidoClaude.Actions.HandleMessage** - Handle messages during session
-- **JidoClaude.Actions.CancelSession** - Cancel an active session
+- **Jido.Claude.Actions.StartSession** - Start a Claude session with prompt
+- **Jido.Claude.Actions.HandleMessage** - Handle messages during session
+- **Jido.Claude.Actions.CancelSession** - Cancel an active session
 
 ### Parent Integration
 
-- **JidoClaude.Parent.SessionRegistry** - Track multiple sessions
-- **JidoClaude.Parent.SpawnSession** - Spawn child ClaudeSessionAgent
-- **JidoClaude.Parent.HandleSessionEvent** - Process signals from children
-- **JidoClaude.Parent.CancelSession** - Cancel child sessions
+- **Jido.Claude.Parent.SessionRegistry** - Track multiple sessions
+- **Jido.Claude.Parent.SpawnSession** - Spawn child ClaudeSessionAgent
+- **Jido.Claude.Parent.HandleSessionEvent** - Process signals from children
+- **Jido.Claude.Parent.CancelSession** - Cancel child sessions
 
 ## Code Style Guidelines
 

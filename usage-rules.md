@@ -17,8 +17,8 @@ claude  # authenticate via browser
 A Jido agent that manages a single Claude Code session:
 
 ```elixir
-alias JidoClaude.ClaudeSessionAgent
-alias JidoClaude.Actions.StartSession
+alias Jido.Claude.ClaudeSessionAgent
+alias Jido.Claude.Actions.StartSession
 
 # Start a session agent
 {:ok, pid} = Jido.Agent.Server.start_link(
@@ -38,7 +38,7 @@ Jido.Agent.Server.cmd(pid, {StartSession, %{
 
 **StartSession** - Start a Claude session:
 ```elixir
-{:ok, result} = JidoClaude.Actions.StartSession.run(%{
+{:ok, result} = Jido.Claude.Actions.StartSession.run(%{
   prompt: "Review this code for security issues",
   model: "sonnet",           # "haiku", "sonnet", or "opus"
   max_turns: 25,             # Maximum agentic iterations
@@ -51,14 +51,14 @@ Jido.Agent.Server.cmd(pid, {StartSession, %{
 
 **HandleMessage** - Handle incoming messages:
 ```elixir
-{:ok, result} = JidoClaude.Actions.HandleMessage.run(%{
+{:ok, result} = Jido.Claude.Actions.HandleMessage.run(%{
   message: "Continue with the next step"
 }, context)
 ```
 
 **CancelSession** - Cancel an active session:
 ```elixir
-{:ok, result} = JidoClaude.Actions.CancelSession.run(%{}, context)
+{:ok, result} = Jido.Claude.Actions.CancelSession.run(%{}, context)
 ```
 
 ## Parent Agent Pattern
@@ -73,7 +73,7 @@ defmodule MyOrchestrator do
       sessions: [type: :map, default: %{}]
     ]
 
-  alias JidoClaude.Parent.{SpawnSession, HandleSessionEvent, CancelSession}
+  alias Jido.Claude.Parent.{SpawnSession, HandleSessionEvent, CancelSession}
 
   def signal_routes do
     [
@@ -156,10 +156,10 @@ agent.state.sessions
 Jido Claude uses Splode for structured errors:
 
 ```elixir
-case JidoClaude.Actions.StartSession.run(params, context) do
+case Jido.Claude.Actions.StartSession.run(params, context) do
   {:ok, result} -> 
     # Handle success
-  {:error, %JidoClaude.Error{} = error} ->
+  {:error, %Jido.Claude.Error{} = error} ->
     # Handle structured error
     Logger.error("Session failed: #{error.message}")
 end
@@ -171,7 +171,7 @@ end
 defmodule MySessionTest do
   use ExUnit.Case
   
-  alias JidoClaude.Actions.StartSession
+  alias Jido.Claude.Actions.StartSession
 
   test "validates required parameters" do
     {:error, error} = StartSession.run(%{}, %{})

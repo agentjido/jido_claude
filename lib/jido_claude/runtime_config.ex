@@ -1,4 +1,4 @@
-defmodule JidoClaude.RuntimeConfig do
+defmodule Jido.Claude.RuntimeConfig do
   @moduledoc false
 
   @default_model "sonnet"

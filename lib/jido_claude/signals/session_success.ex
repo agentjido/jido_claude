@@ -1,4 +1,4 @@
-defmodule JidoClaude.Signals.SessionSuccess do
+defmodule Jido.Claude.Signals.SessionSuccess do
   @moduledoc """
   `claude.session.success` signal emitted when a session completes successfully.
   """

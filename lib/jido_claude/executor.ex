@@ -1,10 +1,10 @@
-defmodule JidoClaude.Executor do
+defmodule Jido.Claude.Executor do
   @moduledoc """
   Behaviour for Claude execution backends.
 
   Executors are responsible for starting and cancelling a single Claude run
   while preserving the `claude.internal.message` signal contract consumed by
-  `JidoClaude.Actions.HandleMessage`.
+  `Jido.Claude.Actions.HandleMessage`.
   """
 
   @typedoc "Opaque runner reference used for cancellation."

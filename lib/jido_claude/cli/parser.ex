@@ -1,4 +1,4 @@
-defmodule JidoClaude.CLI.Parser do
+defmodule Jido.Claude.CLI.Parser do
   @moduledoc """
   Pure helpers for parsing Claude stream-json output.
   """

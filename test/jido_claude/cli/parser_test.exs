@@ -1,7 +1,7 @@
-defmodule JidoClaude.CLI.ParserTest do
+defmodule Jido.Claude.CLI.ParserTest do
   use ExUnit.Case, async: true
 
-  alias JidoClaude.CLI.Parser
+  alias Jido.Claude.CLI.Parser
 
   test "event_kind/1 returns nested stream event kind" do
     event = %{"type" => "stream_event", "event" => %{"type" => "content_block_delta"}}

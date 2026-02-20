@@ -1,6 +1,6 @@
-defmodule JidoClaude.CLI.Runner.Result do
+defmodule Jido.Claude.CLI.Runner.Result do
   @moduledoc """
-  Validated result returned by `JidoClaude.CLI.Runner`.
+  Validated result returned by `Jido.Claude.CLI.Runner`.
   """
 
   @schema Zoi.struct(

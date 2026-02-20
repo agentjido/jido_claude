@@ -1,4 +1,4 @@
-defmodule JidoClaude.ClaudeSessionAgent do
+defmodule Jido.Claude.ClaudeSessionAgent do
   @moduledoc """
   Agent that manages a single Claude Code session lifecycle.
 
@@ -86,15 +86,15 @@ defmodule JidoClaude.ClaudeSessionAgent do
 
   def signal_routes do
     [
-      {"claude.internal.message", {JidoClaude.Actions.HandleMessage, %{}}}
+      {"claude.internal.message", {Jido.Claude.Actions.HandleMessage, %{}}}
     ]
   end
 
   def actions do
     [
-      JidoClaude.Actions.StartSession,
-      JidoClaude.Actions.HandleMessage,
-      JidoClaude.Actions.CancelSession
+      Jido.Claude.Actions.StartSession,
+      Jido.Claude.Actions.HandleMessage,
+      Jido.Claude.Actions.CancelSession
     ]
   end
 end

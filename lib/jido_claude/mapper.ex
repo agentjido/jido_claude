@@ -1,4 +1,4 @@
-defmodule JidoClaude.Mapper do
+defmodule Jido.Claude.Mapper do
   @moduledoc """
   Maps Claude SDK messages to normalized `Jido.Harness.Event` structs.
   """
@@ -89,7 +89,11 @@ defmodule JidoClaude.Mapper do
     [build_event(:tool_call, session_id, %{"name" => name, "input" => input || %{}, "call_id" => id}, message)]
   end
 
-  defp map_assistant_block(%{type: :tool_result, content: content, tool_use_id: tool_use_id, is_error: is_error}, session_id, message) do
+  defp map_assistant_block(
+         %{type: :tool_result, content: content, tool_use_id: tool_use_id, is_error: is_error},
+         session_id,
+         message
+       ) do
     [
       build_event(
         :tool_result,

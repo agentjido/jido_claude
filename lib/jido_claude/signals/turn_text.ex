@@ -1,4 +1,4 @@
-defmodule JidoClaude.Signals.TurnText do
+defmodule Jido.Claude.Signals.TurnText do
   @moduledoc """
   `claude.turn.text` signal emitted for assistant text output.
   """

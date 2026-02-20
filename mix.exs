@@ -1,4 +1,4 @@
-defmodule JidoClaude.MixProject do
+defmodule Jido.Claude.MixProject do
   use Mix.Project
 
   @version "0.1.0"
@@ -147,20 +147,20 @@ defmodule JidoClaude.MixProject do
       ],
       groups_for_modules: [
         Core: [
-          JidoClaude,
-          JidoClaude.ClaudeSessionAgent,
-          JidoClaude.Signals
+          Jido.Claude,
+          Jido.Claude.ClaudeSessionAgent,
+          Jido.Claude.Signals
         ],
         Actions: [
-          JidoClaude.Actions.StartSession,
-          JidoClaude.Actions.HandleMessage,
-          JidoClaude.Actions.CancelSession
+          Jido.Claude.Actions.StartSession,
+          Jido.Claude.Actions.HandleMessage,
+          Jido.Claude.Actions.CancelSession
         ],
         "Parent Integration": [
-          JidoClaude.Parent.SessionRegistry,
-          JidoClaude.Parent.SpawnSession,
-          JidoClaude.Parent.HandleSessionEvent,
-          JidoClaude.Parent.CancelSession
+          Jido.Claude.Parent.SessionRegistry,
+          Jido.Claude.Parent.SpawnSession,
+          Jido.Claude.Parent.HandleSessionEvent,
+          Jido.Claude.Parent.CancelSession
         ]
       ]
     ]

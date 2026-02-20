@@ -1,4 +1,4 @@
-defmodule JidoClaude.LiveIntegrationCase do
+defmodule Jido.Claude.LiveIntegrationCase do
   @moduledoc false
 
   use ExUnit.CaseTemplate
@@ -9,7 +9,7 @@ defmodule JidoClaude.LiveIntegrationCase do
 
   using do
     quote do
-      import JidoClaude.LiveIntegrationCase
+      import Jido.Claude.LiveIntegrationCase
 
       @moduletag :integration
       @moduletag timeout: 240_000

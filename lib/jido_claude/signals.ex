@@ -1,16 +1,16 @@
-defmodule JidoClaude.Signals do
+defmodule Jido.Claude.Signals do
   @moduledoc """
   Compatibility facade for Claude session signal constructors.
 
-  Signal definitions live in dedicated modules under `JidoClaude.Signals.*`.
+  Signal definitions live in dedicated modules under `Jido.Claude.Signals.*`.
   """
 
-  alias JidoClaude.Signals.SessionError
-  alias JidoClaude.Signals.SessionStarted
-  alias JidoClaude.Signals.SessionSuccess
-  alias JidoClaude.Signals.TurnText
-  alias JidoClaude.Signals.TurnToolResult
-  alias JidoClaude.Signals.TurnToolUse
+  alias Jido.Claude.Signals.SessionError
+  alias Jido.Claude.Signals.SessionStarted
+  alias Jido.Claude.Signals.SessionSuccess
+  alias Jido.Claude.Signals.TurnText
+  alias Jido.Claude.Signals.TurnToolResult
+  alias Jido.Claude.Signals.TurnToolUse
 
   @doc """
   Signal emitted when a Claude session is initialized.

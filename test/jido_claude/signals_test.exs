@@ -1,7 +1,7 @@
-defmodule JidoClaude.SignalsTest do
+defmodule Jido.Claude.SignalsTest do
   use ExUnit.Case, async: true
 
-  alias JidoClaude.Signals
+  alias Jido.Claude.Signals
 
   describe "session_started/1" do
     test "builds signal with session_id and model" do

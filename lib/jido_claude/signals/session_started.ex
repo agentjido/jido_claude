@@ -1,4 +1,4 @@
-defmodule JidoClaude.Signals.SessionStarted do
+defmodule Jido.Claude.Signals.SessionStarted do
   @moduledoc """
   `claude.session.started` signal emitted when a Claude session initializes.
   """

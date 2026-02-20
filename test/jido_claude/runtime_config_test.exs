@@ -1,7 +1,7 @@
-defmodule JidoClaude.RuntimeConfigTest do
+defmodule Jido.Claude.RuntimeConfigTest do
   use ExUnit.Case, async: false
 
-  alias JidoClaude.RuntimeConfig
+  alias Jido.Claude.RuntimeConfig
 
   @env_keys [
     "JIDO_CLAUDE_SETTINGS_PATH",

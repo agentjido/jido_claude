@@ -1,4 +1,4 @@
-defmodule JidoClaude.Parent.HandleSessionEvent do
+defmodule Jido.Claude.Parent.HandleSessionEvent do
   @moduledoc """
   Process signals from child Claude sessions.
 
@@ -51,7 +51,7 @@ defmodule JidoClaude.Parent.HandleSessionEvent do
       data: [type: :map, default: %{}]
     ]
 
-  alias JidoClaude.Parent.SessionRegistry
+  alias Jido.Claude.Parent.SessionRegistry
 
   @impl true
   def run(params, context) do

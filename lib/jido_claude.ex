@@ -1,8 +1,8 @@
-defmodule JidoClaude do
+defmodule Jido.Claude do
   @moduledoc """
   Claude Code integration for the Jido Agent framework.
 
-  JidoClaude provides a two-agent pattern for running Claude Code sessions:
+  Jido.Claude provides a two-agent pattern for running Claude Code sessions:
 
   - **ClaudeSessionAgent** - Manages a single Claude session lifecycle, emits signals per turn
   - **Parent Agent** - Business logic, manages multiple concurrent Claude sessions
@@ -42,12 +42,12 @@ defmodule JidoClaude do
 
       # Start a session agent
       {:ok, pid} = Jido.Agent.Server.start_link(
-        agent: JidoClaude.ClaudeSessionAgent,
+        agent: Jido.Claude.ClaudeSessionAgent,
         name: {:via, Registry, {MyRegistry, "claude-1"}}
       )
 
       # Run a prompt
-      Jido.Agent.Server.cmd(pid, {JidoClaude.Actions.StartSession, %{
+      Jido.Agent.Server.cmd(pid, {Jido.Claude.Actions.StartSession, %{
         prompt: "Analyze this codebase",
         model: "sonnet",
         max_turns: 25
@@ -56,7 +56,7 @@ defmodule JidoClaude do
   ### Multi-Session (Parent Agent)
 
       # In your parent agent
-      {agent, _} = cmd(agent, {JidoClaude.Parent.SpawnSession, %{
+      {agent, _} = cmd(agent, {Jido.Claude.Parent.SpawnSession, %{
         session_id: "review-pr-123",
         prompt: "Review PR #123 for security issues"
       }})
@@ -75,7 +75,7 @@ defmodule JidoClaude do
   """
 
   @doc """
-  Returns the version of the JidoClaude library.
+  Returns the version of the Jido.Claude library.
   """
   def version, do: "0.1.0"
 end

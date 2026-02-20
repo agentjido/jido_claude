@@ -1,4 +1,4 @@
-defmodule JidoClaude.Adapter do
+defmodule Jido.Claude.Adapter do
   @moduledoc """
   `Jido.Harness.Adapter` implementation for Claude Code.
   """
@@ -7,7 +7,7 @@ defmodule JidoClaude.Adapter do
 
   alias ClaudeAgentSDK.Options
   alias Jido.Harness.{Capabilities, Event, RunRequest, RuntimeContract}
-  alias JidoClaude.Mapper
+  alias Jido.Claude.Mapper
 
   @option_keys [
     :model,

@@ -1,12 +1,12 @@
-defmodule JidoClaude.Integration.SpriteShellIntegrationTest do
+defmodule Jido.Claude.Integration.SpriteShellIntegrationTest do
   use ExUnit.Case, async: false
-  use JidoClaude.LiveIntegrationCase
+  use Jido.Claude.LiveIntegrationCase
 
   alias Jido.Signal
-  alias JidoClaude.Actions.StartSession
+  alias Jido.Claude.Actions.StartSession
 
   @terminal_subtypes [:success, :error_exception, :error_max_turns, :error_timeout]
-  @integration_skip_reason JidoClaude.LiveIntegrationCase.skip_reason()
+  @integration_skip_reason Jido.Claude.LiveIntegrationCase.skip_reason()
 
   if @integration_skip_reason do
     @moduletag skip: @integration_skip_reason

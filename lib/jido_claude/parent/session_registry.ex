@@ -1,4 +1,4 @@
-defmodule JidoClaude.Parent.SessionRegistry do
+defmodule Jido.Claude.Parent.SessionRegistry do
   @moduledoc """
   State helpers for managing multiple Claude sessions in a parent agent.
 

@@ -1,4 +1,4 @@
-defmodule JidoClaude.Actions.StartSession do
+defmodule Jido.Claude.Actions.StartSession do
   @moduledoc """
   Start a Claude Code session.
 
@@ -97,7 +97,7 @@ defmodule JidoClaude.Actions.StartSession do
   end
 
   defp build_options(params) do
-    model = params[:model] || JidoClaude.RuntimeConfig.default_model()
+    model = params[:model] || Jido.Claude.RuntimeConfig.default_model()
 
     %{
       model: model,
@@ -106,7 +106,7 @@ defmodule JidoClaude.Actions.StartSession do
       cwd: params[:cwd] || File.cwd!(),
       system_prompt: params[:system_prompt],
       timeout_ms: params[:sdk_timeout_ms],
-      env: JidoClaude.RuntimeConfig.runtime_env_overrides()
+      env: Jido.Claude.RuntimeConfig.runtime_env_overrides()
     }
   end
 
@@ -116,13 +116,13 @@ defmodule JidoClaude.Actions.StartSession do
     else
       case target do
         :local ->
-          {:ok, Application.get_env(:jido_claude, :executor_local_module, JidoClaude.Executor.Local)}
+          {:ok, Application.get_env(:jido_claude, :executor_local_module, Jido.Claude.Executor.Local)}
 
         :shell ->
-          {:ok, Application.get_env(:jido_claude, :executor_shell_module, JidoClaude.Executor.Shell)}
+          {:ok, Application.get_env(:jido_claude, :executor_shell_module, Jido.Claude.Executor.Shell)}
 
         :sprite ->
-          {:ok, Application.get_env(:jido_claude, :executor_shell_module, JidoClaude.Executor.Shell)}
+          {:ok, Application.get_env(:jido_claude, :executor_shell_module, Jido.Claude.Executor.Shell)}
 
         other ->
           {:error, {:unsupported_execution_target, other}}

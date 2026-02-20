@@ -1,4 +1,4 @@
-defmodule JidoClaude.Actions.HandleMessage do
+defmodule Jido.Claude.Actions.HandleMessage do
   @moduledoc """
   Process a message from the Claude SDK stream.
 
@@ -39,7 +39,7 @@ defmodule JidoClaude.Actions.HandleMessage do
   @compile {:no_warn_undefined, {Jido.Agent.Directive, :stop, 1}}
 
   alias Jido.Agent.Directive
-  alias JidoClaude.Signals
+  alias Jido.Claude.Signals
 
   @impl true
   def run(params, context) do

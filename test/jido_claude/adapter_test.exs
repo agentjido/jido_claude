@@ -1,9 +1,9 @@
-defmodule JidoClaude.AdapterTest do
+defmodule Jido.Claude.AdapterTest do
   use ExUnit.Case, async: false
 
   alias ClaudeAgentSDK.Message
   alias Jido.Harness.RunRequest
-  alias JidoClaude.Adapter
+  alias Jido.Claude.Adapter
 
   defmodule StubSdk do
     def query(prompt, opts) do

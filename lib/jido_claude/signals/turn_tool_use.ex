@@ -1,4 +1,4 @@
-defmodule JidoClaude.Signals.TurnToolUse do
+defmodule Jido.Claude.Signals.TurnToolUse do
   @moduledoc """
   `claude.turn.tool_use` signal emitted when Claude requests a tool call.
   """

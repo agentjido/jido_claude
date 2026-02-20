@@ -1,4 +1,4 @@
-defmodule JidoClaude.Signals.SessionError do
+defmodule Jido.Claude.Signals.SessionError do
   @moduledoc """
   `claude.session.error` signal emitted when a session fails or is cancelled.
   """

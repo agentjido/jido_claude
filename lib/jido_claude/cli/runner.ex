@@ -1,12 +1,12 @@
-defmodule JidoClaude.CLI.Runner do
+defmodule Jido.Claude.CLI.Runner do
   @moduledoc """
   Run Claude CLI in an existing shell session and parse stream-json output.
 
   This module does not own shell session lifecycle.
   """
 
-  alias JidoClaude.CLI.Parser
-  alias JidoClaude.CLI.Runner.Result
+  alias Jido.Claude.CLI.Parser
+  alias Jido.Claude.CLI.Runner.Result
 
   @default_timeout 300_000
   @default_prompt_write_timeout 10_000

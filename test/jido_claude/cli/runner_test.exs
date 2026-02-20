@@ -1,8 +1,8 @@
-defmodule JidoClaude.CLI.RunnerTest do
+defmodule Jido.Claude.CLI.RunnerTest do
   use ExUnit.Case, async: false
 
-  alias JidoClaude.CLI.Runner
-  alias JidoClaude.CLI.Runner.Result
+  alias Jido.Claude.CLI.Runner
+  alias Jido.Claude.CLI.Runner.Result
 
   @timeout_probe_name :jido_claude_cli_runner_timeout_probe
 

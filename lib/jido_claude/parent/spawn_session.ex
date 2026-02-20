@@ -1,4 +1,4 @@
-defmodule JidoClaude.Parent.SpawnSession do
+defmodule Jido.Claude.Parent.SpawnSession do
   @moduledoc """
   Spawn a ClaudeSessionAgent as a child of the parent agent.
 
@@ -49,8 +49,8 @@ defmodule JidoClaude.Parent.SpawnSession do
   @compile {:no_warn_undefined, {Jido.Agent.Directive, :spawn_agent, 3}}
 
   alias Jido.Agent.Directive
-  alias JidoClaude.ClaudeSessionAgent
-  alias JidoClaude.Parent.SessionRegistry
+  alias Jido.Claude.ClaudeSessionAgent
+  alias Jido.Claude.Parent.SessionRegistry
 
   @impl true
   def run(params, context) do

@@ -1,11 +1,11 @@
-defmodule JidoClaude.Executor.Local do
+defmodule Jido.Claude.Executor.Local do
   @moduledoc """
   Local executor that delegates to the existing Claude SDK stream runner.
   """
 
-  @behaviour JidoClaude.Executor
+  @behaviour Jido.Claude.Executor
 
-  alias JidoClaude.StreamRunner
+  alias Jido.Claude.StreamRunner
 
   @impl true
   def start(%{agent_pid: agent_pid, prompt: prompt, options: options}) do

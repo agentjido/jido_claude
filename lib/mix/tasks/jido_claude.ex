@@ -33,7 +33,7 @@ defmodule Mix.Tasks.JidoClaude do
   use Mix.Task
 
   alias ClaudeAgentSDK.{Options, Message}
-  alias JidoClaude.RuntimeConfig
+  alias Jido.Claude.RuntimeConfig
 
   require Logger
 

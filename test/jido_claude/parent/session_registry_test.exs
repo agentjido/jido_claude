@@ -1,7 +1,7 @@
-defmodule JidoClaude.Parent.SessionRegistryTest do
+defmodule Jido.Claude.Parent.SessionRegistryTest do
   use ExUnit.Case, async: true
 
-  alias JidoClaude.Parent.SessionRegistry
+  alias Jido.Claude.Parent.SessionRegistry
 
   describe "init_sessions/1" do
     test "adds empty sessions map if not present" do

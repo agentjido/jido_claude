@@ -1,10 +1,10 @@
-defmodule JidoClaude.Actions.CancelSession do
+defmodule Jido.Claude.Actions.CancelSession do
   @moduledoc """
   Cancel a running Claude session.
 
   This action is called on the ClaudeSessionAgent itself to cancel
   its running session. For cancelling a child session from a parent
-  agent, use `JidoClaude.Parent.CancelSession` instead.
+  agent, use `Jido.Claude.Parent.CancelSession` instead.
 
   ## Parameters
 
@@ -27,7 +27,7 @@ defmodule JidoClaude.Actions.CancelSession do
   @compile {:no_warn_undefined, {Jido.Agent.Directive, :stop, 1}}
 
   alias Jido.Agent.Directive
-  alias JidoClaude.Signals
+  alias Jido.Claude.Signals
 
   @impl true
   def run(params, context) do
@@ -64,7 +64,7 @@ defmodule JidoClaude.Actions.CancelSession do
   defp cancel_runner(nil), do: nil
 
   defp cancel_runner(agent) do
-    executor_module = agent.state[:executor_module] || JidoClaude.Executor.Local
+    executor_module = agent.state[:executor_module] || Jido.Claude.Executor.Local
     runner_ref = agent.state[:runner_ref]
 
     case executor_module.cancel(runner_ref) do

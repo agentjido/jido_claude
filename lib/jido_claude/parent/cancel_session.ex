@@ -1,4 +1,4 @@
-defmodule JidoClaude.Parent.CancelSession do
+defmodule Jido.Claude.Parent.CancelSession do
   @moduledoc """
   Cancel a running Claude session from the parent agent.
 
@@ -31,7 +31,7 @@ defmodule JidoClaude.Parent.CancelSession do
   @compile {:no_warn_undefined, {Jido.Agent.Directive, :stop_child, 2}}
 
   alias Jido.Agent.Directive
-  alias JidoClaude.Parent.SessionRegistry
+  alias Jido.Claude.Parent.SessionRegistry
 
   @impl true
   def run(params, context) do
