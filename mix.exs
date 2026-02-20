@@ -64,14 +64,31 @@ defmodule JidoClaude.MixProject do
   defp runtime_deps do
     [
       {:jido, "~> 2.0.0-rc.5"},
-      {:claude_agent_sdk, "~> 0.7"},
-      {:jido_shell, github: "agentjido/jido_shell"},
+      {:claude_agent_sdk, "~> 0.14"},
+      harness_dep(),
+      shell_dep(),
       {:sprites, git: "https://github.com/mikehostetler/sprites-ex.git", override: true},
       {:jason, "~> 1.4"},
-      {:zoi, "~> 0.14"},
-      {:splode, "~> 0.3", override: true},
+      {:zoi, "~> 0.17"},
+      {:splode, ">= 0.2.9 and < 0.4.0", override: true},
       {:uniq, "~> 0.6"}
     ]
+  end
+
+  defp harness_dep do
+    if File.dir?("../jido_harness") do
+      {:jido_harness, "~> 0.1", path: "../jido_harness", override: true}
+    else
+      {:jido_harness, "~> 0.1"}
+    end
+  end
+
+  defp shell_dep do
+    if File.dir?("../jido_shell") do
+      {:jido_shell, path: "../jido_shell", override: true}
+    else
+      {:jido_shell, github: "agentjido/jido_shell", override: true}
+    end
   end
 
   defp dev_test_deps do
