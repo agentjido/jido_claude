@@ -218,3 +218,13 @@ Jido.Agent.Server.cmd(pid, {StartSession, %{
 ## License
 
 Apache 2.0
+
+## Package Purpose
+
+`jido_claude` is the Claude adapter package for `jido_harness`, exposing normalized runs while keeping Claude-specific mapping and runtime contract details isolated.
+
+## Testing Paths
+
+- Unit/contract tests: `mix test`
+- Full quality gate: `mix quality`
+- Optional live/sprite checks: run tests tagged `:integration` when credentials and CLI are available
