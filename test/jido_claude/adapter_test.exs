@@ -1,6 +1,12 @@
 defmodule Jido.Claude.AdapterTest do
   use ExUnit.Case, async: false
 
+  use Jido.Harness.AdapterContract,
+    adapter: Jido.Claude.Adapter,
+    provider: :claude,
+    check_run: true,
+    run_request: %{prompt: "contract claude run", cwd: "/repo", metadata: %{}}
+
   alias ClaudeAgentSDK.Message
   alias Jido.Harness.RunRequest
   alias Jido.Claude.Adapter
