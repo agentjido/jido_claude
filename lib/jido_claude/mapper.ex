@@ -6,6 +6,9 @@ defmodule Jido.Claude.Mapper do
   alias ClaudeAgentSDK.Message
   alias Jido.Harness.Event
 
+  @doc """
+  Maps a Claude SDK message into one or more normalized harness events.
+  """
   @spec map_message(term()) :: {:ok, [Event.t()]} | {:error, term()}
   def map_message(%Message{type: :system, subtype: :init, data: data} = message) when is_map(data) do
     payload = %{
@@ -129,7 +132,7 @@ defmodule Jido.Claude.Mapper do
       provider: :claude,
       session_id: session_id,
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
-      payload: stringify_keys(payload || %{}),
+      payload: stringify_keys(payload),
       raw: raw
     })
   end

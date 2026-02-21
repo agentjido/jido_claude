@@ -21,12 +21,21 @@ defmodule Jido.Claude.CLI.Runner.Result do
   @enforce_keys Zoi.Struct.enforce_keys(@schema)
   defstruct Zoi.Struct.struct_fields(@schema)
 
+  @doc """
+  Returns the Zoi schema backing this result struct.
+  """
   @spec schema() :: Zoi.schema()
   def schema, do: @schema
 
+  @doc """
+  Validates attributes and returns a typed runner result struct.
+  """
   @spec new(map()) :: {:ok, t()} | {:error, term()}
   def new(attrs) when is_map(attrs), do: Zoi.parse(@schema, attrs)
 
+  @doc """
+  Validates attributes and raises if the result payload is invalid.
+  """
   @spec new!(map()) :: t()
   def new!(attrs) do
     case new(attrs) do

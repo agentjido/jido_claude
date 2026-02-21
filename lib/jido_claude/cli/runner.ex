@@ -13,6 +13,9 @@ defmodule Jido.Claude.CLI.Runner do
   @default_prompt_file "/tmp/jido_claude_prompt.txt"
   @default_heartbeat_interval_ms 5_000
 
+  @doc """
+  Executes a Claude CLI prompt inside an existing shell session and returns parsed stream results.
+  """
   @spec run_in_shell(String.t(), String.t(), String.t(), keyword()) ::
           {:ok, Result.t()} | {:error, term()}
   def run_in_shell(session_id, cwd, prompt, opts \\ [])

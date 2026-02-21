@@ -9,19 +9,16 @@ defmodule Jido.Claude.Executor.Local do
 
   @impl true
   def start(%{agent_pid: agent_pid, prompt: prompt, options: options}) do
-    case Task.start(fn ->
-           StreamRunner.run(%{
-             agent_pid: agent_pid,
-             prompt: prompt,
-             options: options
-           })
-         end) do
-      {:ok, pid} ->
-        {:ok, %{pid: pid}, %{}}
+    {:ok, pid} =
+      Task.start(fn ->
+        StreamRunner.run(%{
+          agent_pid: agent_pid,
+          prompt: prompt,
+          options: options
+        })
+      end)
 
-      {:error, reason} ->
-        {:error, {:local_executor_start_failed, reason}}
-    end
+    {:ok, %{pid: pid}, %{}}
   end
 
   @impl true

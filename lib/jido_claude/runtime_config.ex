@@ -22,6 +22,9 @@ defmodule Jido.Claude.RuntimeConfig do
     "CLAUDE_CODE_API_KEY"
   ]
 
+  @doc """
+  Returns the default Claude model resolved from app env, system env, or fallback.
+  """
   @spec default_model() :: String.t()
   def default_model do
     app_default = Application.get_env(:jido_claude, :default_model)
@@ -34,6 +37,9 @@ defmodule Jido.Claude.RuntimeConfig do
     end
   end
 
+  @doc """
+  Builds runtime environment overrides from settings, system, and app config.
+  """
   @spec runtime_env_overrides() :: %{optional(String.t()) => String.t()}
   def runtime_env_overrides do
     settings_env = settings_env_overrides()
@@ -44,6 +50,9 @@ defmodule Jido.Claude.RuntimeConfig do
     |> Map.merge(app_env_overrides())
   end
 
+  @doc """
+  Merges explicit env overrides on top of resolved runtime overrides.
+  """
   @spec merge_runtime_env(map() | keyword() | nil) :: %{optional(String.t()) => String.t()}
   def merge_runtime_env(env_overrides) do
     runtime_env_overrides()

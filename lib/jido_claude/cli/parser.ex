@@ -33,7 +33,6 @@ defmodule Jido.Claude.CLI.Parser do
       else
         false -> {:error, :invalid_json}
         {:error, reason} -> {:error, reason}
-        _ -> {:error, :invalid_json}
       end
     end
   end
