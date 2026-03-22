@@ -65,7 +65,7 @@ defmodule Jido.Claude.MixProject do
     [
       {:jido, "~> 2.1"},
       {:claude_agent_sdk, "~> 0.14"},
-      {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
+      {:jido_harness, path: "../jido_harness", override: true},
       {:jido_shell, github: "agentjido/jido_shell", branch: "main", override: true},
       {:sprites, git: "https://github.com/mikehostetler/sprites-ex.git", override: true},
       {:jason, "~> 1.4"},

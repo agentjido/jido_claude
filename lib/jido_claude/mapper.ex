@@ -5,6 +5,7 @@ defmodule Jido.Claude.Mapper do
 
   alias ClaudeAgentSDK.Message
   alias Jido.Harness.Event
+  alias Jido.Harness.Event.Usage, as: UsageEvent
 
   @doc """
   Maps a Claude SDK message into one or more normalized harness events.
@@ -158,37 +159,16 @@ defmodule Jido.Claude.Mapper do
 
   # ── Stream event sub-dispatchers ──
 
-  defp parse_stream_event(type, event, session_id, message)
+  defp parse_stream_event(type, _event, _session_id, _message)
        when type in ["message_start", :message_start] do
-    # message_start contains input_tokens in usage and model info
-    msg = map_get(event, :message, %{})
-    usage = map_get(msg, :usage, %{})
-    model = map_get(msg, :model)
-    input_tokens = map_get(usage, :input_tokens, 0)
-
-    if input_tokens > 0 do
-      [build_event(:usage, session_id, %{
-        "usage" => %{"input_tokens" => input_tokens, "output_tokens" => 0},
-        "model" => model
-      }, message)]
-    else
-      []
-    end
+    # Token counts are consolidated into the single :usage event emitted by the :result handler
+    []
   end
 
-  defp parse_stream_event(type, event, session_id, message)
+  defp parse_stream_event(type, _event, _session_id, _message)
        when type in ["message_delta", :message_delta] do
-    # message_delta has output_tokens in usage
-    usage = map_get(event, :usage, %{})
-    output_tokens = map_get(usage, :output_tokens, 0)
-
-    if output_tokens > 0 do
-      [build_event(:usage, session_id, %{
-        "usage" => %{"input_tokens" => 0, "output_tokens" => output_tokens}
-      }, message)]
-    else
-      []
-    end
+    # Token counts are consolidated into the single :usage event emitted by the :result handler
+    []
   end
 
   defp parse_stream_event(type, _event, session_id, message)
@@ -211,18 +191,26 @@ defmodule Jido.Claude.Mapper do
     end
   end
 
-  # Extract usage from Result message data (total_cost_usd, duration_ms)
+  # Build a canonical :usage event from result data using UsageEvent.build/3
   defp maybe_result_usage(data, message) do
     cost = map_get(data, :total_cost_usd)
     duration = map_get(data, :duration_ms)
-    session_id = map_get(data, :session_id)
+    session_id = map_get(data, :session_id) || ""
+    usage = map_get(data, :usage, %{}) || %{}
+    model = map_get(data, :model)
 
-    if cost || duration do
-      build_event(:usage, session_id, %{
-        "cost" => cost,
-        "duration_ms" => duration,
-        "usage" => %{}
-      }, message)
+    input_tokens = map_get(usage, :input_tokens, 0) || 0
+    output_tokens = map_get(usage, :output_tokens, 0) || 0
+
+    if cost || duration || input_tokens > 0 || output_tokens > 0 do
+      UsageEvent.build(:claude, session_id,
+        input_tokens: input_tokens,
+        output_tokens: output_tokens,
+        cost_usd: cost,
+        duration_ms: duration,
+        model: if(model, do: to_string(model)),
+        raw: message
+      )
     else
       nil
     end
