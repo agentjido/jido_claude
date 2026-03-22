@@ -95,7 +95,7 @@ defmodule Jido.Claude.AdapterTest do
     events = Enum.to_list(stream)
 
     assert_receive {:claude_query, "triage issue #42"}
-    assert Enum.map(events, & &1.type) == [:session_started, :output_text_delta, :session_completed]
+    assert Enum.map(events, & &1.type) == [:session_started, :output_text_delta, :usage, :session_completed]
     assert Enum.all?(events, &(&1.provider == :claude))
   end
 
