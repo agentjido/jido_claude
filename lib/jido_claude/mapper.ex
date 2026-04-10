@@ -73,7 +73,7 @@ defmodule Jido.Claude.Mapper do
   def map_message(%Message{type: :stream_event, data: data} = message) when is_map(data) do
     event = map_get(data, :event, %{})
     session_id = map_get(data, :session_id)
-    event_type = map_get(event, :type) || map_get(event, "type")
+    event_type = Map.get(event, :type) || Map.get(event, "type")
 
     events = parse_stream_event(event_type, event, session_id, message)
     {:ok, events}
