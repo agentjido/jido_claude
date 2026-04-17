@@ -9,10 +9,13 @@ Add `jido_claude` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:jido_claude, "~> 0.1.0"}
+    {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
+    {:jido_claude, github: "agentjido/jido_claude", branch: "main"}
   ]
 end
 ```
+
+This repo is currently aligned as part of the GitHub-based harness package set rather than a Hex release line.
 
 ## Prerequisites
 
