@@ -338,10 +338,12 @@ defmodule Jido.Claude.Executor.Shell do
     model = get_opt(options, :model, nil)
     max_turns = parse_positive(get_opt(options, :max_turns, nil))
     skip_permissions = truthy?(get_opt(shell_opts, :skip_permissions, true))
+    verbose = truthy?(get_opt(shell_opts, :verbose, true))
     cli_args = normalize_string_list(get_opt(shell_opts, :cli_args, []))
 
     args =
       ["claude", "-p", prompt, "--output-format", "stream-json"]
+      |> maybe_append_flag("--verbose", verbose)
       |> maybe_append_option("--model", model)
       |> maybe_append_option("--max-turns", max_turns)
       |> maybe_append_flag("--dangerously-skip-permissions", skip_permissions)
