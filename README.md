@@ -190,6 +190,7 @@ Local adapter knobs:
 - `JIDO_CLAUDE_LIVE_MODEL` - force a specific model/alias
 - `JIDO_CLAUDE_LIVE_MAX_TURNS` - override the max-turns cap (default `1`)
 - `JIDO_CLAUDE_LIVE_TIMEOUT_MS` - extend the per-run timeout
+- `JIDO_CLAUDE_RAW_CLI=1` - use the local raw CLI compatibility stream when current CLI output is ahead of `claude_agent_sdk`
 - `JIDO_CLAUDE_REQUIRE_SUCCESS=1` - optional strict mode (fail unless the terminal event is successful)
 
 Sprite-backed knobs:

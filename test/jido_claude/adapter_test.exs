@@ -124,6 +124,24 @@ defmodule Jido.Claude.AdapterTest do
     assert details[:details] =~ "output_format"
   end
 
+  test "raw CLI compatibility decoder accepts null parent tool ids" do
+    line =
+      Jason.encode!(%{
+        "type" => "assistant",
+        "session_id" => "claude-session-1",
+        "parent_tool_use_id" => nil,
+        "message" => %{
+          "content" => [%{"type" => "text", "text" => "ok"}]
+        }
+      })
+
+    assert {:ok, %Message{type: :assistant, data: data}} =
+             Jido.Claude.CLI.RawStream.__decode_line__(line)
+
+    assert data.parent_tool_use_id == nil
+    assert data.session_id == "claude-session-1"
+  end
+
   defp restore_env(app, key, nil), do: Application.delete_env(app, key)
   defp restore_env(app, key, value), do: Application.put_env(app, key, value)
 end

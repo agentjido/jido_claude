@@ -193,6 +193,13 @@ defmodule Jido.Claude.Adapter do
   end
 
   defp sdk_module do
-    Application.get_env(:jido_claude, :sdk_module, ClaudeAgentSDK)
+    Application.get_env(:jido_claude, :sdk_module, default_sdk_module())
+  end
+
+  defp default_sdk_module do
+    case System.get_env("JIDO_CLAUDE_RAW_CLI") do
+      value when value in ["1", "true", "yes"] -> Jido.Claude.CLI.RawStream
+      _ -> ClaudeAgentSDK
+    end
   end
 end
