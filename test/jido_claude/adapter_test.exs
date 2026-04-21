@@ -121,7 +121,7 @@ defmodule Jido.Claude.AdapterTest do
              Adapter.run(request, [])
 
     assert message == "Invalid Claude adapter options"
-    assert details[:details] =~ "schema must be a map"
+    assert details[:details] =~ "output_format"
   end
 
   defp restore_env(app, key, nil), do: Application.delete_env(app, key)
