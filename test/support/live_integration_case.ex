@@ -94,10 +94,8 @@ defmodule Jido.Claude.LiveIntegrationCase do
     end
   end
 
-  defp truthy?(true), do: true
   defp truthy?("true"), do: true
   defp truthy?("1"), do: true
-  defp truthy?(1), do: true
   defp truthy?(_), do: false
 
   defp ensure_env_loaded do

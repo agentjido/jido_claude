@@ -35,8 +35,6 @@ defmodule Mix.Tasks.JidoClaude do
   alias ClaudeAgentSDK.{Options, Message}
   alias Jido.Claude.RuntimeConfig
 
-  require Logger
-
   @shortdoc "Start an interactive Claude Code session"
 
   @impl Mix.Task
