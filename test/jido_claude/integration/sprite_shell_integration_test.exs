@@ -76,8 +76,7 @@ defmodule Jido.Claude.Integration.SpriteShellIntegrationTest do
 
   defp unique_sprite_name do
     prefix = sprite_name()
-    suffix = System.unique_integer([:positive, :monotonic])
-    "#{prefix}-#{suffix}"
+    unique_name(prefix)
   end
 
   defp maybe_put(map, _key, nil), do: map

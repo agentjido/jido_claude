@@ -6,8 +6,8 @@ defmodule Jido.Claude.Adapter do
   @behaviour Jido.Harness.Adapter
 
   alias ClaudeAgentSDK.Options
+  alias Jido.Claude.{Error, Mapper}
   alias Jido.Harness.{Capabilities, Event, RunRequest, RuntimeContract}
-  alias Jido.Claude.Mapper
 
   @option_keys [
     :model,
@@ -40,7 +40,9 @@ defmodule Jido.Claude.Adapter do
 
   @impl true
   @spec run(RunRequest.t(), keyword()) :: {:ok, Enumerable.t()} | {:error, term()}
-  def run(%RunRequest{} = request, opts \\ []) when is_list(opts) do
+  def run(request, opts \\ [])
+
+  def run(%RunRequest{} = request, opts) when is_list(opts) do
     with {:ok, options} <- build_options(request, opts) do
       stream =
         sdk_module()
@@ -62,7 +64,11 @@ defmodule Jido.Claude.Adapter do
     end
   rescue
     e in [ArgumentError] ->
-      {:error, {:claude_invalid_request, Exception.message(e)}}
+      {:error, Error.validation_error("Invalid Claude run request", %{details: Exception.message(e)})}
+  end
+
+  def run(other, _opts) do
+    {:error, Error.validation_error("Claude adapter expects %Jido.Harness.RunRequest{}", %{value: other})}
   end
 
   @impl true
@@ -139,10 +145,17 @@ defmodule Jido.Claude.Adapter do
       |> Map.put_new(:output_format, :stream_json)
       |> Map.put_new(:include_partial_messages, true)
 
-    {:ok, struct(Options, attrs)}
+    options =
+      attrs
+      |> Map.to_list()
+      |> Options.new()
+
+    _ = Options.to_args(options)
+
+    {:ok, options}
   rescue
     e in [KeyError, ArgumentError] ->
-      {:error, {:claude_option_error, Exception.message(e)}}
+      {:error, Error.validation_error("Invalid Claude adapter options", %{details: Exception.message(e)})}
   end
 
   defp normalize_map_keys(map) when is_map(map) do

@@ -9,10 +9,13 @@ Add `jido_claude` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:jido_claude, "~> 0.1.0"}
+    {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
+    {:jido_claude, github: "agentjido/jido_claude", branch: "main"}
   ]
 end
 ```
+
+This repo is currently aligned as part of the GitHub-based harness package set rather than a Hex release line.
 
 ## Prerequisites
 
@@ -162,15 +165,34 @@ agent.state.sessions
 | `claude.session.success` | Session completed successfully |
 | `claude.session.error` | Session failed |
 
-## Live Sprite Integration Test
+## Live Integration Tests
 
-`jido_claude` includes an opt-in live integration test for sprite-backed execution:
+`jido_claude` includes opt-in live integration tests for both local adapter execution and sprite-backed execution.
+
+Local adapter run:
+
+```bash
+mix test --include integration test/jido_claude/integration/adapter_live_integration_test.exs
+```
+
+Sprite-backed run:
 
 ```bash
 mix test --include integration test/jido_claude/integration/sprite_shell_integration_test.exs
 ```
 
-The test loads `.env` automatically and looks for:
+The tests load `.env` automatically.
+
+Local adapter knobs:
+
+- `JIDO_CLAUDE_LIVE_PROMPT` - override the default prompt
+- `JIDO_CLAUDE_LIVE_CWD` - override the working directory
+- `JIDO_CLAUDE_LIVE_MODEL` - force a specific model/alias
+- `JIDO_CLAUDE_LIVE_MAX_TURNS` - override the max-turns cap (default `1`)
+- `JIDO_CLAUDE_LIVE_TIMEOUT_MS` - extend the per-run timeout
+- `JIDO_CLAUDE_REQUIRE_SUCCESS=1` - optional strict mode (fail unless the terminal event is successful)
+
+Sprite-backed knobs:
 
 - `SPRITE_TOKEN` (or `SPRITES_TEST_TOKEN`) - required
 - `SPRITE_BASE_URL` (or `SPRITES_TEST_BASE_URL`) - optional

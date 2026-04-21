@@ -53,7 +53,7 @@ defmodule Jido.Claude.LiveIntegrationCase do
   end
 
   def unique_name(prefix \\ "jido-claude-it") do
-    suffix = System.unique_integer([:positive, :monotonic])
+    suffix = Base.encode16(:crypto.strong_rand_bytes(4), case: :lower)
     "#{prefix}-#{suffix}"
   end
 
@@ -94,10 +94,8 @@ defmodule Jido.Claude.LiveIntegrationCase do
     end
   end
 
-  defp truthy?(true), do: true
   defp truthy?("true"), do: true
   defp truthy?("1"), do: true
-  defp truthy?(1), do: true
   defp truthy?(_), do: false
 
   defp ensure_env_loaded do

@@ -9,7 +9,7 @@ defmodule Jido.Claude.AdapterTest do
 
   alias ClaudeAgentSDK.Message
   alias Jido.Harness.RunRequest
-  alias Jido.Claude.Adapter
+  alias Jido.Claude.{Adapter, Error}
 
   defmodule StubSdk do
     def query(prompt, opts) do
@@ -97,6 +97,31 @@ defmodule Jido.Claude.AdapterTest do
     assert_receive {:claude_query, "triage issue #42"}
     assert Enum.map(events, & &1.type) == [:session_started, :output_text_delta, :usage, :session_completed]
     assert Enum.all?(events, &(&1.provider == :claude))
+  end
+
+  test "run/2 returns structured validation errors for invalid request terms" do
+    assert {:error, %Error.InvalidInputError{message: message, value: value}} =
+             Adapter.run(:not_a_run_request, [])
+
+    assert message =~ "expects %Jido.Harness.RunRequest{}"
+    assert value == :not_a_run_request
+  end
+
+  test "run/2 returns structured validation errors for invalid adapter options" do
+    request =
+      RunRequest.new!(%{
+        prompt: "triage issue #42",
+        cwd: "/repo",
+        metadata: %{
+          "claude" => %{"output_format" => {:json_schema, :invalid_schema}}
+        }
+      })
+
+    assert {:error, %Error.InvalidInputError{message: message, details: details}} =
+             Adapter.run(request, [])
+
+    assert message == "Invalid Claude adapter options"
+    assert details[:details] =~ "schema must be a map"
   end
 
   defp restore_env(app, key, nil), do: Application.delete_env(app, key)
