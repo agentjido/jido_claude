@@ -28,7 +28,18 @@ jido_claude-*.tar
 # Dialyzer PLT files
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
+/priv/plts/
 *.plt
+*.plt.hash
 
 # Elixir LS
 /.elixir_ls/
+
+# Editor/IDE
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
