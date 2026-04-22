@@ -163,13 +163,11 @@ defmodule Jido.Claude.CLI.RawStream do
   defp safe_subtype(_type, subtype) when is_binary(subtype), do: subtype
   defp safe_subtype(_type, _subtype), do: nil
 
-  defp env_list(env) when is_map(env) do
+  defp env_list(env) do
     env
     |> Enum.map(fn {key, value} -> {to_string(key), to_string(value)} end)
     |> Enum.reject(fn {_key, value} -> value == "" end)
   end
-
-  defp env_list(_env), do: []
 
   defp maybe_put_cmd_opt(opts, _key, nil), do: opts
   defp maybe_put_cmd_opt(opts, _key, []), do: opts
