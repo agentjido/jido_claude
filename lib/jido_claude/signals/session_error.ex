@@ -6,6 +6,10 @@ defmodule Jido.Claude.Signals.SessionError do
   use Jido.Signal,
     type: "claude.session.error",
     default_source: "/claude",
+    extension_policy: [
+      {Jido.Signal.Ext.Trace, :optional},
+      {Jido.Signal.Ext.Dispatch, :optional}
+    ],
     schema: [
       session_id: [type: :string, required: false],
       error_type: [type: :any, required: false],

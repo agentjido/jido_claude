@@ -6,6 +6,10 @@ defmodule Jido.Claude.Signals.TurnToolUse do
   use Jido.Signal,
     type: "claude.turn.tool_use",
     default_source: "/claude",
+    extension_policy: [
+      {Jido.Signal.Ext.Trace, :optional},
+      {Jido.Signal.Ext.Dispatch, :optional}
+    ],
     schema: [
       session_id: [type: :string, required: false],
       tool: [type: :string, required: false],
