@@ -6,6 +6,10 @@ defmodule Jido.Claude.Signals.SessionSuccess do
   use Jido.Signal,
     type: "claude.session.success",
     default_source: "/claude",
+    extension_policy: [
+      {Jido.Signal.Ext.Trace, :optional},
+      {Jido.Signal.Ext.Dispatch, :optional}
+    ],
     schema: [
       session_id: [type: :string, required: false],
       result: [type: :any, required: false],

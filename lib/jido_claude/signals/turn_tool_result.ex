@@ -8,5 +8,9 @@ defmodule Jido.Claude.Signals.TurnToolResult do
 
   use Jido.Signal,
     type: "claude.turn.tool_result",
-    default_source: "/claude"
+    default_source: "/claude",
+    extension_policy: [
+      {Jido.Signal.Ext.Trace, :optional},
+      {Jido.Signal.Ext.Dispatch, :optional}
+    ]
 end

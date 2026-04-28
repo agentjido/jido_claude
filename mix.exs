@@ -64,7 +64,7 @@ defmodule Jido.Claude.MixProject do
 
   defp runtime_deps do
     [
-      {:jido, "~> 2.1"},
+      {:jido, "~> 2.2"},
       {:claude_agent_sdk, "~> 0.14"},
       {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
       {:jido_shell, github: "agentjido/jido_shell", branch: "main", override: true},
