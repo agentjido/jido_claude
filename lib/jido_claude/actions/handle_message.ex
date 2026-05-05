@@ -41,6 +41,38 @@ defmodule Jido.Claude.Actions.HandleMessage do
   alias Jido.Agent.Directive
   alias Jido.Claude.Signals
 
+  @data_key_aliases %{
+    "apiKeySource" => :api_key_source,
+    "cwd" => :cwd,
+    "duration_ms" => :duration_ms,
+    "duration_api_ms" => :duration_api_ms,
+    "error" => :error,
+    "is_error" => :is_error,
+    "mcp_servers" => :mcp_servers,
+    "message" => :message,
+    "model" => :model,
+    "num_turns" => :num_turns,
+    "parent_tool_use_id" => :parent_tool_use_id,
+    "permissionMode" => :permission_mode,
+    "request_id" => :request_id,
+    "result" => :result,
+    "session_id" => :session_id,
+    "subtype" => :subtype,
+    "tools" => :tools,
+    "tool_use_result" => :tool_use_result,
+    "total_cost_usd" => :total_cost_usd,
+    "type" => :type,
+    "usage" => :usage,
+    "uuid" => :uuid
+  }
+
+  @impl true
+  def on_before_validate_params(%{data: data} = params) do
+    {:ok, %{params | data: normalize_data(data)}}
+  end
+
+  def on_before_validate_params(params), do: {:ok, params}
+
   @impl true
   def run(params, context) do
     agent = context[:agent]
@@ -52,6 +84,37 @@ defmodule Jido.Claude.Actions.HandleMessage do
     directives = build_directives(agent, parent_signals, terminal?)
 
     {:ok, state_update, directives}
+  end
+
+  defp normalize_data(data) when is_map(data) do
+    Enum.reduce(data, %{}, fn
+      {key, value}, acc when is_atom(key) ->
+        Map.put(acc, key, value)
+
+      {key, value}, acc when is_binary(key) ->
+        case normalize_data_key(key) do
+          {:ok, atom_key} -> Map.put_new(acc, atom_key, value)
+          :error -> acc
+        end
+
+      _other, acc ->
+        acc
+    end)
+  end
+
+  defp normalize_data(data), do: data
+
+  defp normalize_data_key(key) do
+    case Map.fetch(@data_key_aliases, key) do
+      {:ok, atom_key} -> {:ok, atom_key}
+      :error -> existing_atom_key(key)
+    end
+  end
+
+  defp existing_atom_key(key) do
+    {:ok, String.to_existing_atom(key)}
+  rescue
+    ArgumentError -> :error
   end
 
   defp get_session_id(agent, context) do
