@@ -41,24 +41,68 @@ defmodule Jido.Claude.Actions.HandleMessage do
   alias Jido.Agent.Directive
   alias Jido.Claude.Signals
 
+  @param_key_aliases %{
+    "data" => :data,
+    "raw" => :raw,
+    "subtype" => :subtype,
+    "type" => :type
+  }
+
+  @type_aliases %{
+    "assistant" => :assistant,
+    "rate_limit_event" => :rate_limit_event,
+    "result" => :result,
+    "stream_event" => :stream_event,
+    "system" => :system,
+    "unknown" => :unknown,
+    "user" => :user
+  }
+
+  @subtype_aliases %{
+    "error_during_execution" => :error_during_execution,
+    "error_exception" => :error_exception,
+    "error_max_turns" => :error_max_turns,
+    "error_timeout" => :error_timeout,
+    "init" => :init,
+    "success" => :success,
+    "task_notification" => :task_notification,
+    "task_progress" => :task_progress,
+    "task_started" => :task_started
+  }
+
   @data_key_aliases %{
     "apiKeySource" => :api_key_source,
+    "content" => :content,
     "cwd" => :cwd,
+    "description" => :description,
     "duration_ms" => :duration_ms,
     "duration_api_ms" => :duration_api_ms,
     "error" => :error,
+    "error_details" => :error_details,
+    "error_struct" => :error_struct,
+    "event" => :event,
     "is_error" => :is_error,
+    "last_tool_name" => :last_tool_name,
     "mcp_servers" => :mcp_servers,
     "message" => :message,
     "model" => :model,
     "num_turns" => :num_turns,
+    "output_file" => :output_file,
     "parent_tool_use_id" => :parent_tool_use_id,
     "permissionMode" => :permission_mode,
+    "rate_limit_info" => :rate_limit_info,
     "request_id" => :request_id,
     "result" => :result,
     "session_id" => :session_id,
+    "status" => :status,
+    "stop_reason" => :stop_reason,
+    "structured_output" => :structured_output,
     "subtype" => :subtype,
+    "summary" => :summary,
+    "task_id" => :task_id,
+    "task_type" => :task_type,
     "tools" => :tools,
+    "tool_use_id" => :tool_use_id,
     "tool_use_result" => :tool_use_result,
     "total_cost_usd" => :total_cost_usd,
     "type" => :type,
@@ -67,8 +111,15 @@ defmodule Jido.Claude.Actions.HandleMessage do
   }
 
   @impl true
-  def on_before_validate_params(%{data: data} = params) do
-    {:ok, %{params | data: normalize_data(data)}}
+  def on_before_validate_params(params) when is_map(params) do
+    params =
+      params
+      |> normalize_param_keys()
+      |> maybe_update(:type, &normalize_message_type/1)
+      |> maybe_update(:subtype, &normalize_message_subtype/1)
+      |> maybe_update(:data, &normalize_data/1)
+
+    {:ok, params}
   end
 
   def on_before_validate_params(params), do: {:ok, params}
@@ -85,6 +136,42 @@ defmodule Jido.Claude.Actions.HandleMessage do
 
     {:ok, state_update, directives}
   end
+
+  defp normalize_param_keys(params) do
+    Enum.reduce(params, %{}, fn
+      {key, value}, acc when is_atom(key) ->
+        Map.put(acc, key, value)
+
+      {key, value}, acc when is_binary(key) ->
+        case Map.fetch(@param_key_aliases, key) do
+          {:ok, atom_key} -> Map.put_new(acc, atom_key, value)
+          :error -> Map.put(acc, key, value)
+        end
+
+      {key, value}, acc ->
+        Map.put(acc, key, value)
+    end)
+  end
+
+  defp normalize_message_type(type) when is_atom(type), do: type
+
+  defp normalize_message_type(type) when is_binary(type) do
+    Map.get(@type_aliases, type, :unknown)
+  end
+
+  defp normalize_message_type(type), do: type
+
+  defp normalize_message_subtype(nil), do: nil
+  defp normalize_message_subtype(subtype) when is_atom(subtype), do: subtype
+
+  defp normalize_message_subtype(subtype) when is_binary(subtype) do
+    case Map.fetch(@subtype_aliases, subtype) do
+      {:ok, atom_subtype} -> atom_subtype
+      :error -> if String.starts_with?(subtype, "error_"), do: :error_exception, else: :unknown
+    end
+  end
+
+  defp normalize_message_subtype(subtype), do: subtype
 
   defp normalize_data(data) when is_map(data) do
     Enum.reduce(data, %{}, fn
@@ -104,17 +191,18 @@ defmodule Jido.Claude.Actions.HandleMessage do
 
   defp normalize_data(data), do: data
 
-  defp normalize_data_key(key) do
-    case Map.fetch(@data_key_aliases, key) do
-      {:ok, atom_key} -> {:ok, atom_key}
-      :error -> existing_atom_key(key)
+  defp maybe_update(map, key, fun) do
+    case Map.fetch(map, key) do
+      {:ok, value} -> Map.put(map, key, fun.(value))
+      :error -> map
     end
   end
 
-  defp existing_atom_key(key) do
-    {:ok, String.to_existing_atom(key)}
-  rescue
-    ArgumentError -> :error
+  defp normalize_data_key(key) do
+    case Map.fetch(@data_key_aliases, key) do
+      {:ok, atom_key} -> {:ok, atom_key}
+      :error -> :error
+    end
   end
 
   defp get_session_id(agent, context) do
@@ -192,15 +280,18 @@ defmodule Jido.Claude.Actions.HandleMessage do
     {state, [signal], true}
   end
 
-  defp process_message(%{type: :result, subtype: subtype, data: data}, _agent, session_id)
-       when subtype in [:error_max_turns, :error_exception, :error_timeout] do
-    state = %{
-      status: :failure,
-      error: %{type: subtype, details: data}
-    }
+  defp process_message(%{type: :result, subtype: subtype, data: data}, _agent, session_id) do
+    if result_error_subtype?(subtype) do
+      state = %{
+        status: :failure,
+        error: %{type: subtype, details: data}
+      }
 
-    signal = Signals.session_error(session_id, subtype, data)
-    {state, [signal], true}
+      signal = Signals.session_error(session_id, subtype, data)
+      {state, [signal], true}
+    else
+      {%{}, [], false}
+    end
   end
 
   defp process_message(_msg, _agent, _session_id) do
@@ -225,6 +316,14 @@ defmodule Jido.Claude.Actions.HandleMessage do
       signal_directives
     end
   end
+
+  defp result_error_subtype?(subtype) when is_atom(subtype) do
+    subtype
+    |> Atom.to_string()
+    |> String.starts_with?("error_")
+  end
+
+  defp result_error_subtype?(_subtype), do: false
 
   defp extract_content_blocks(%{"message" => %{"content" => content}}) when is_list(content) do
     Enum.map(content, fn
