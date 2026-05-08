@@ -34,6 +34,7 @@ defmodule Jido.Claude.Adapter do
       tool_calls?: true,
       tool_results?: true,
       thinking?: true,
+      resume?: true,
       cancellation?: false
     }
   end
@@ -43,10 +44,10 @@ defmodule Jido.Claude.Adapter do
   def run(request, opts \\ [])
 
   def run(%RunRequest{} = request, opts) when is_list(opts) do
-    with {:ok, options} <- build_options(request, opts) do
+    with {:ok, options} <- build_options(request, opts),
+         {:ok, source_stream} <- build_source_stream(request, options) do
       stream =
-        sdk_module()
-        |> apply(:query, [request.prompt, options])
+        source_stream
         |> Stream.flat_map(fn message ->
           case mapper_module().map_message(message) do
             {:ok, events} when is_list(events) ->
@@ -69,6 +70,32 @@ defmodule Jido.Claude.Adapter do
 
   def run(other, _opts) do
     {:error, Error.validation_error("Claude adapter expects %Jido.Harness.RunRequest{}", %{value: other})}
+  end
+
+  defp build_source_stream(%RunRequest{session_id: nil} = request, options) do
+    {:ok, sdk_module() |> apply(:query, [request.prompt, options])}
+  end
+
+  defp build_source_stream(%RunRequest{session_id: session_id} = request, options) when is_binary(session_id) do
+    module = sdk_module()
+
+    cond do
+      String.trim(session_id) == "" ->
+        {:error,
+         Error.validation_error("session_id must be a non-empty string when provided", %{
+           field: :session_id,
+           value: session_id
+         })}
+
+      function_exported?(module, :resume, 3) ->
+        {:ok, module |> apply(:resume, [session_id, request.prompt, options])}
+
+      true ->
+        {:error,
+         Error.execution_error("Configured Claude SDK module does not support resume/3", %{
+           module: inspect(module)
+         })}
+    end
   end
 
   @impl true

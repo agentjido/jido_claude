@@ -15,11 +15,20 @@ defmodule Jido.Claude.AdapterTest do
     def query(prompt, opts) do
       Application.get_env(:jido_claude, :stub_adapter_query, fn _prompt, _opts -> [] end).(prompt, opts)
     end
+
+    def resume(session_id, prompt, opts) do
+      Application.get_env(:jido_claude, :stub_adapter_resume, fn _session_id, _prompt, _opts -> [] end).(
+        session_id,
+        prompt,
+        opts
+      )
+    end
   end
 
   setup do
     old_sdk = Application.get_env(:jido_claude, :sdk_module)
     old_query = Application.get_env(:jido_claude, :stub_adapter_query)
+    old_resume = Application.get_env(:jido_claude, :stub_adapter_resume)
 
     Application.put_env(:jido_claude, :sdk_module, StubSdk)
 
@@ -66,9 +75,39 @@ defmodule Jido.Claude.AdapterTest do
       ]
     end)
 
+    Application.put_env(:jido_claude, :stub_adapter_resume, fn session_id, prompt, _opts ->
+      send(self(), {:claude_resume, session_id, prompt})
+
+      [
+        %Message{
+          type: :system,
+          subtype: :init,
+          data: %{
+            session_id: session_id,
+            cwd: "/repo",
+            model: "sonnet",
+            tools: ["Read", "Bash"]
+          },
+          raw: %{}
+        },
+        %Message{
+          type: :result,
+          subtype: :success,
+          data: %{
+            session_id: session_id,
+            result: "Done",
+            is_error: false,
+            num_turns: 1
+          },
+          raw: %{}
+        }
+      ]
+    end)
+
     on_exit(fn ->
       restore_env(:jido_claude, :sdk_module, old_sdk)
       restore_env(:jido_claude, :stub_adapter_query, old_query)
+      restore_env(:jido_claude, :stub_adapter_resume, old_resume)
     end)
 
     :ok
@@ -79,6 +118,7 @@ defmodule Jido.Claude.AdapterTest do
     caps = Adapter.capabilities()
     assert caps.streaming? == true
     assert caps.tool_calls? == true
+    assert caps.resume? == true
   end
 
   test "runtime_contract/0 supports both anthropic and zai envs" do
@@ -97,6 +137,24 @@ defmodule Jido.Claude.AdapterTest do
     assert_receive {:claude_query, "triage issue #42"}
     assert Enum.map(events, & &1.type) == [:session_started, :output_text_delta, :usage, :session_completed]
     assert Enum.all?(events, &(&1.provider == :claude))
+  end
+
+  test "run/2 resumes sdk session when request carries session_id" do
+    request = RunRequest.new!(%{prompt: "continue", cwd: "/repo", session_id: "claude-session-2", metadata: %{}})
+
+    assert {:ok, stream} = Adapter.run(request)
+    events = Enum.to_list(stream)
+
+    assert_receive {:claude_resume, "claude-session-2", "continue"}
+    refute_received {:claude_query, _prompt}
+    assert Enum.map(events, & &1.type) == [:session_started, :session_completed]
+    assert Enum.all?(events, &(&1.session_id == "claude-session-2"))
+  end
+
+  test "run/2 rejects blank session_id" do
+    request = RunRequest.new!(%{prompt: "continue", cwd: "/repo", session_id: " ", metadata: %{}})
+
+    assert {:error, %Error.InvalidInputError{field: :session_id}} = Adapter.run(request)
   end
 
   test "run/2 returns structured validation errors for invalid request terms" do
