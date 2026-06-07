@@ -49,6 +49,7 @@ This is an Elixir library for **Claude Code integration** with the Jido Agent fr
 ## Git Commit Guidelines
 
 Use **Conventional Commits** format for all commit messages:
+- Do not modify `CHANGELOG.md`; release notes are generated from Git history during release, so keep changes focused on proper Conventional Commits.
 
 ```
 <type>[optional scope]: <description>
