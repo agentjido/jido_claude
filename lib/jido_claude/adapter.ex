@@ -15,6 +15,11 @@ defmodule Jido.Claude.Adapter do
     :timeout_ms,
     :system_prompt,
     :allowed_tools,
+    :disallowed_tools,
+    :add_dirs,
+    :mcp_servers,
+    :mcp_config,
+    :permission_mode,
     :cwd,
     :verbose,
     :include_partial_messages,
@@ -155,8 +160,12 @@ defmodule Jido.Claude.Adapter do
         timeout_ms: request.timeout_ms,
         system_prompt: request.system_prompt,
         allowed_tools: request.allowed_tools,
+        disallowed_tools: request.disallowed_tools,
+        add_dirs: request.add_dirs,
+        permission_mode: request.permission_mode,
         cwd: request.cwd
       }
+      |> Map.merge(mcp_config_attrs(request.mcp_config))
       |> Enum.reject(fn {_key, value} -> is_nil(value) end)
       |> Enum.into(%{})
 
@@ -184,6 +193,15 @@ defmodule Jido.Claude.Adapter do
     e in [KeyError, ArgumentError] ->
       {:error, Error.validation_error("Invalid Claude adapter options", %{details: Exception.message(e)})}
   end
+
+  # RunRequest.mcp_config is provider-agnostic: a map is interpreted as a
+  # programmatic MCP server bundle (SDK `:mcp_servers`); a string is
+  # interpreted as a JSON config file path (SDK `:mcp_config`). Anything else
+  # falls through and is dropped.
+  defp mcp_config_attrs(nil), do: %{}
+  defp mcp_config_attrs(value) when is_map(value), do: %{mcp_servers: value}
+  defp mcp_config_attrs(value) when is_binary(value), do: %{mcp_config: value}
+  defp mcp_config_attrs(_), do: %{}
 
   defp normalize_map_keys(map) when is_map(map) do
     Enum.reduce(map, %{}, fn

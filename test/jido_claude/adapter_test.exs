@@ -32,8 +32,8 @@ defmodule Jido.Claude.AdapterTest do
 
     Application.put_env(:jido_claude, :sdk_module, StubSdk)
 
-    Application.put_env(:jido_claude, :stub_adapter_query, fn prompt, _opts ->
-      send(self(), {:claude_query, prompt})
+    Application.put_env(:jido_claude, :stub_adapter_query, fn prompt, opts ->
+      send(self(), {:claude_query, prompt, opts})
 
       [
         %Message{
@@ -134,7 +134,7 @@ defmodule Jido.Claude.AdapterTest do
     assert {:ok, stream} = Adapter.run(request)
     events = Enum.to_list(stream)
 
-    assert_receive {:claude_query, "triage issue #42"}
+    assert_receive {:claude_query, "triage issue #42", _opts}
     assert Enum.map(events, & &1.type) == [:session_started, :output_text_delta, :usage, :session_completed]
     assert Enum.all?(events, &(&1.provider == :claude))
   end
@@ -146,7 +146,7 @@ defmodule Jido.Claude.AdapterTest do
     events = Enum.to_list(stream)
 
     assert_receive {:claude_resume, "claude-session-2", "continue"}
-    refute_received {:claude_query, _prompt}
+    refute_received {:claude_query, _prompt, _opts}
     assert Enum.map(events, & &1.type) == [:session_started, :session_completed]
     assert Enum.all?(events, &(&1.session_id == "claude-session-2"))
   end
@@ -180,6 +180,150 @@ defmodule Jido.Claude.AdapterTest do
 
     assert message == "Invalid Claude adapter options"
     assert details[:details] =~ "output_format"
+  end
+
+  describe "permission field wiring (RunRequest -> SDK Options)" do
+    alias ClaudeAgentSDK.Options
+
+    test "omitted permission fields produce no permission argv" do
+      request = RunRequest.new!(%{prompt: "noop", cwd: "/repo", metadata: %{}})
+      assert {:ok, _stream} = Adapter.run(request)
+
+      assert_receive {:claude_query, "noop", %Options{} = options}
+      assert options.disallowed_tools in [nil, []]
+      assert options.add_dirs in [nil, []]
+      assert options.mcp_servers in [nil, %{}]
+      assert options.mcp_config == nil
+      assert options.permission_mode == nil
+
+      argv = Options.to_args(options)
+      refute "--disallowedTools" in argv
+      refute "--add-dir" in argv
+      refute "--mcp-config" in argv
+      refute "--permission-mode" in argv
+    end
+
+    test "disallowed_tools flows into --disallowedTools" do
+      request =
+        RunRequest.new!(%{
+          prompt: "deny",
+          cwd: "/repo",
+          disallowed_tools: ["Bash(rm *)", "Bash(curl *)"],
+          metadata: %{}
+        })
+
+      assert {:ok, _stream} = Adapter.run(request)
+      assert_receive {:claude_query, "deny", %Options{} = options}
+
+      assert options.disallowed_tools == ["Bash(rm *)", "Bash(curl *)"]
+      argv = Options.to_args(options)
+      assert "--disallowedTools" in argv
+      assert "Bash(rm *),Bash(curl *)" in argv
+    end
+
+    test "add_dirs flows into one --add-dir flag per directory" do
+      request =
+        RunRequest.new!(%{
+          prompt: "scope",
+          cwd: "/repo",
+          add_dirs: ["/tmp", "/var/log"],
+          metadata: %{}
+        })
+
+      assert {:ok, _stream} = Adapter.run(request)
+      assert_receive {:claude_query, "scope", %Options{} = options}
+
+      assert options.add_dirs == ["/tmp", "/var/log"]
+      argv = Options.to_args(options)
+      assert Enum.count(argv, &(&1 == "--add-dir")) == 2
+      assert "/tmp" in argv
+      assert "/var/log" in argv
+    end
+
+    test "mcp_config map routes to --mcp-config JSON via :mcp_servers" do
+      mcp = %{
+        "github" => %{"type" => "stdio", "command" => "github-mcp", "args" => []}
+      }
+
+      request =
+        RunRequest.new!(%{prompt: "mcp", cwd: "/repo", mcp_config: mcp, metadata: %{}})
+
+      assert {:ok, _stream} = Adapter.run(request)
+      assert_receive {:claude_query, "mcp", %Options{} = options}
+
+      assert options.mcp_servers == mcp
+      argv = Options.to_args(options)
+      assert "--mcp-config" in argv
+      assert Enum.any?(argv, &(is_binary(&1) and String.contains?(&1, "github")))
+    end
+
+    test "mcp_config string routes to --mcp-config as a file path" do
+      request =
+        RunRequest.new!(%{
+          prompt: "mcp-file",
+          cwd: "/repo",
+          mcp_config: "/etc/mcp.json",
+          metadata: %{}
+        })
+
+      assert {:ok, _stream} = Adapter.run(request)
+      assert_receive {:claude_query, "mcp-file", %Options{} = options}
+
+      assert options.mcp_config == "/etc/mcp.json"
+      argv = Options.to_args(options)
+      assert "--mcp-config" in argv
+      assert "/etc/mcp.json" in argv
+    end
+
+    test "permission_mode atom flows into --permission-mode" do
+      request =
+        RunRequest.new!(%{
+          prompt: "plan",
+          cwd: "/repo",
+          permission_mode: :plan,
+          metadata: %{}
+        })
+
+      assert {:ok, _stream} = Adapter.run(request)
+      assert_receive {:claude_query, "plan", %Options{} = options}
+
+      assert options.permission_mode == :plan
+      argv = Options.to_args(options)
+      assert "--permission-mode" in argv
+      assert "plan" in argv
+    end
+
+    test "combined allow + deny + add_dir + mcp + permission_mode all reach the SDK" do
+      request =
+        RunRequest.new!(%{
+          prompt: "combined",
+          cwd: "/repo",
+          allowed_tools: ["Read", "Edit"],
+          disallowed_tools: ["Bash(rm *)"],
+          add_dirs: ["/tmp"],
+          mcp_config: %{"github" => %{"type" => "stdio", "command" => "x"}},
+          permission_mode: :accept_edits,
+          metadata: %{}
+        })
+
+      assert {:ok, _stream} = Adapter.run(request)
+      assert_receive {:claude_query, "combined", %Options{} = options}
+
+      assert options.allowed_tools == ["Read", "Edit"]
+      assert options.disallowed_tools == ["Bash(rm *)"]
+      assert options.add_dirs == ["/tmp"]
+      assert options.mcp_servers == %{"github" => %{"type" => "stdio", "command" => "x"}}
+      assert options.permission_mode == :accept_edits
+
+      argv = Options.to_args(options)
+      assert "--allowedTools" in argv
+      assert "--disallowedTools" in argv
+      assert "--add-dir" in argv
+      assert "--mcp-config" in argv
+      assert "--permission-mode" in argv
+      # The SDK normalises atom modes to camelCase strings for the CLI.
+      assert Enum.any?(argv, &(&1 in ["acceptEdits", "accept_edits"]))
+    end
   end
 
   test "raw CLI compatibility decoder accepts null parent tool ids" do
